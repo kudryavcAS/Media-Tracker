@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -17,8 +18,17 @@ public class MediaController {
     private final MediaService service;
 
     @GetMapping("/")
-    public String index(Model model) {
-        model.addAttribute("items", service.findAll());
+    public String index(@RequestParam(required = false, defaultValue = "ALL") String type,
+                        @RequestParam(required = false, defaultValue = "ALL") String status,
+                        @RequestParam(required = false) String sort,
+                        Model model) {
+
+        model.addAttribute("items", service.getFilteredAndSortedItems(type, status, sort));
+
+        model.addAttribute("currentType", type);
+        model.addAttribute("currentStatus", status);
+        model.addAttribute("currentSort", sort);
+
         return "index";
     }
 

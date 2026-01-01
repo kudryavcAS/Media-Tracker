@@ -2,7 +2,6 @@ package com.tracker.mediatracker.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDate;
 
 @Data
 @Entity
@@ -15,8 +14,11 @@ public abstract class MediaItem {
     private Long id;
 
     private String title;
-    private LocalDate releaseDate;
+
+    private Integer releaseYear;
+
     private Integer durationMinutes;
+
     private String directors;
 
     @Enumerated(EnumType.STRING)

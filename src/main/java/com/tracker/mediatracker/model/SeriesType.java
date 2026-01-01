@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum SeriesType {
-    LIVE_ACTION("Сериал"),
+    LIVE_ACTION("Реалы"),
     ANIME("Аниме"),
     ANIMATION("Мультфильм");
 
