@@ -9,6 +9,13 @@ import lombok.Data;
 @DiscriminatorColumn(name = "content_type")
 public abstract class MediaItem {
 
+    public static final String FIELD_TITLE = "title";
+    public static final String FIELD_DIRECTORS = "directors";
+    public static final String FIELD_RELEASE_YEAR = "releaseYear";
+    public static final String FIELD_DURATION = "durationMinutes";
+    public static final String FIELD_STATUS = "status";
+    public static final String FIELD_TYPE = "seriesType";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
