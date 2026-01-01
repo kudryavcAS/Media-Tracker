@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Сериал</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<head th:replace="~{fragments :: head('Сериал')}">
 </head>
 <body class="container mt-5">
-<div class="card shadow-sm">
+<div class="card shadow-sm bg-white">
     <div class="card-header bg-success text-white">
         <h2 class="mb-0" th:text="${series.id == null ? 'Добавить новый сериал' : 'Редактировать сериал'}"></h2>
     </div>

@@ -13,11 +13,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class MediaController {
 
+    private static final String REDIRECT_HOME = "redirect:/";
+    private static final String FILTER_ALL = "ALL";
+
     private final MediaService service;
 
     @GetMapping("/")
-    public String index(@RequestParam(required = false, defaultValue = "ALL") String type,
-                        @RequestParam(required = false, defaultValue = "ALL") String status,
+    public String index(@RequestParam(required = false, defaultValue = FILTER_ALL) String type,
+                        @RequestParam(required = false, defaultValue = FILTER_ALL) String status,
                         @RequestParam(required = false) String sort,
                         @RequestParam(required = false) String q,
                         Model model) {
@@ -41,7 +44,7 @@ public class MediaController {
     @PostMapping("/save/movie")
     public String saveMovie(@ModelAttribute Movie movie) {
         service.save(movie);
-        return "redirect:/";
+        return REDIRECT_HOME;
     }
 
     @GetMapping("/add/series")
@@ -53,7 +56,7 @@ public class MediaController {
     @PostMapping("/save/series")
     public String saveSeries(@ModelAttribute Series series) {
         service.save(series);
-        return "redirect:/";
+        return REDIRECT_HOME;
     }
 
     @PostMapping("/series/{id}/inc")
@@ -73,7 +76,7 @@ public class MediaController {
         MediaItem item = service.findById(id);
         switch (item) {
             case null -> {
-                return "redirect:/";
+                return REDIRECT_HOME;
             }
             case Movie movie -> {
                 model.addAttribute("movie", movie);
@@ -87,12 +90,12 @@ public class MediaController {
             }
         }
 
-        return "redirect:/";
+        return REDIRECT_HOME;
     }
 
     @GetMapping("/delete/{id}")
     public String deleteItem(@PathVariable Long id) {
         service.delete(id);
-        return "redirect:/";
+        return REDIRECT_HOME;
     }
 }
