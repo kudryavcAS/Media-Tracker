@@ -19,12 +19,15 @@ public class MediaController {
     public String index(@RequestParam(required = false, defaultValue = "ALL") String type,
                         @RequestParam(required = false, defaultValue = "ALL") String status,
                         @RequestParam(required = false) String sort,
+                        @RequestParam(required = false) String q,
                         Model model) {
 
-        model.addAttribute("items", service.getFilteredAndSortedItems(type, status, sort));
+        model.addAttribute("items", service.getFilteredAndSortedItems(type, status, sort, q));
+
         model.addAttribute("currentType", type);
         model.addAttribute("currentStatus", status);
         model.addAttribute("currentSort", sort);
+        model.addAttribute("currentQuery", q);
 
         return "index";
     }
@@ -68,16 +71,20 @@ public class MediaController {
     @GetMapping("/edit/{id}")
     public String editItem(@PathVariable Long id, Model model) {
         MediaItem item = service.findById(id);
-        if (item == null) {
-            return "redirect:/";
-        }
-
-        if (item instanceof Movie movie) {
-            model.addAttribute("movie", movie);
-            return "movie_form";
-        } else if (item instanceof Series series) {
-            model.addAttribute("series", series);
-            return "series_form";
+        switch (item) {
+            case null -> {
+                return "redirect:/";
+            }
+            case Movie movie -> {
+                model.addAttribute("movie", movie);
+                return "movie_form";
+            }
+            case Series series -> {
+                model.addAttribute("series", series);
+                return "series_form";
+            }
+            default -> {
+            }
         }
 
         return "redirect:/";

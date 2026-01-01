@@ -1,7 +1,6 @@
 package com.tracker.mediatracker.service;
 
 import com.tracker.mediatracker.model.MediaItem;
-import com.tracker.mediatracker.model.Series;
 import com.tracker.mediatracker.model.SeriesType;
 import com.tracker.mediatracker.model.WatchStatus;
 import com.tracker.mediatracker.repo.MediaItemRepository;
@@ -19,9 +18,10 @@ public class MediaService {
 
     private final MediaItemRepository mediaRepository;
 
-    public List<MediaItem> getFilteredAndSortedItems(String typeFilter, String statusFilter, String sort) {
+    public List<MediaItem> getFilteredAndSortedItems(String typeFilter, String statusFilter, String sort, String query) {
         List<MediaItem> items = fetchItemsByType(typeFilter);
         items = filterByStatus(items, statusFilter);
+        items = filterByQuery(items, query);
         applySorting(items, sort);
         return items;
     }
@@ -57,6 +57,17 @@ public class MediaService {
         }
     }
 
+    private List<MediaItem> filterByQuery(List<MediaItem> items, String query) {
+        if (query == null || query.isBlank()) {
+            return items;
+        }
+        String q = query.toLowerCase();
+        return items.stream()
+                .filter(item -> (item.getTitle() != null && item.getTitle().toLowerCase().contains(q)) ||
+                        (item.getDirectors() != null && item.getDirectors().toLowerCase().contains(q)))
+                .collect(Collectors.toList());
+    }
+
     private void applySorting(List<MediaItem> items, String sort) {
         if (sort == null) {
             items.sort(Comparator.comparing(MediaItem::getId).reversed());
@@ -90,7 +101,7 @@ public class MediaService {
     @Transactional
     public void updateSeriesProgress(Long id, int change) {
         MediaItem item = mediaRepository.findById(id).orElse(null);
-        if (item instanceof Series series) {
+        if (item instanceof com.tracker.mediatracker.model.Series series) {
             int current = series.getWatchedEpisodes() == null ? 0 : series.getWatchedEpisodes();
             int newVal = current + change;
             if (newVal < 0) newVal = 0;
