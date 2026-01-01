@@ -49,4 +49,5 @@ build/
 *.db
 *.sqlite
 media.db
+docker_data/
 
