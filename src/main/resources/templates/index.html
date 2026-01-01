@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Media Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Мой список</h1>
+    <div>
+        <a href="/add/movie" class="btn btn-primary">+ Фильм</a>
+        <a href="/add/series" class="btn btn-success">+ Сериал</a>
+    </div>
+</div>
+
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th>Тип</th>
+        <th>Название</th>
+        <th>Год</th>
+        <th>Статус</th>
+        <th>Инфо</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${items}">
+        <td>
+            <span th:if="${item instanceof T(com.tracker.mediatracker.model.Movie)}" class="badge bg-primary">Фильм</span>
+            <span th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}" class="badge bg-success"
+                  th:text="${item.seriesType.title}">Сериал</span>
+        </td>
+        <td th:text="${item.title}"></td>
+        <td th:text="${item.releaseDate}"></td>
+        <td>
+            <span class="badge bg-secondary" th:text="${item.status.title}"></span>
+        </td>
+        <td>
+                    <span th:if="${item instanceof T(com.tracker.mediatracker.model.Movie)}">
+                         Реж: <span th:text="${item.directors}"></span>
+                    </span>
+            <span th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}">
+                        Серий: <span th:text="${item.totalEpisodes}"></span>
+                    </span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div th:if="${items.isEmpty()}" class="alert alert-info">
+    Список пуст.
+</div>
+
+</body>
+</html>

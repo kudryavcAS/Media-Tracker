@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"><head>
+  <meta charset="UTF-8">
+  <title>Добавить сериал</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+
+<h2>Добавить новый сериал</h2>
+
+<form th:action="@{/save/series}" th:object="${series}" method="post">
+
+  <div class="mb-3">
+    <label class="form-label">Название</label>
+    <input type="text" class="form-control" th:field="*{title}" required>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Тип</label>
+      <select class="form-select" th:field="*{seriesType}">
+        <option th:each="type : ${T(com.tracker.mediatracker.model.SeriesType).values()}"
+                th:value="${type}" th:text="${type.title}"></option>
+      </select>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Всего серий (план)</label>
+      <input type="number" class="form-control" th:field="*{totalEpisodes}">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Дата выхода</label>
+      <input type="date" class="form-control" th:field="*{releaseDate}">
+    </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Длительность серии (мин)</label>
+      <input type="number" class="form-control" th:field="*{durationMinutes}">
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Статус</label>
+    <select class="form-select" th:field="*{status}">
+      <option th:each="st : ${T(com.tracker.mediatracker.model.WatchStatus).values()}"
+              th:value="${st}" th:text="${st.title}"></option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-success">Сохранить</button>
+  <a href="/" class="btn btn-secondary">Отмена</a>
+</form>
+
+</body>
+</html>
