@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Media Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         .clickable-row { cursor: pointer; }
@@ -97,6 +98,7 @@
                th:href="@{/(type=${currentType}, status=${currentStatus}, sort='duration')}">Общее время</a>
         </th>
         <th>Статус</th>
+        <th>Действия</th>
     </tr>
     </thead>
 
@@ -110,7 +112,14 @@
             <span th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}" class="badge bg-success" th:text="${item.seriesType.title}"></span>
         </td>
 
-        <td class="fw-bold" th:text="${item.title}"></td>
+        <td class="fw-bold">
+            <span th:text="${item.title}"></span>
+            <div th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}" class="progress mt-1" style="height: 5px; width: 100px;">
+                <div class="progress-bar bg-success" role="progressbar"
+                     th:style="'width: ' + (${item.totalEpisodes} > 0 ? (${item.watchedEpisodes} * 100 / ${item.totalEpisodes}) : 0) + '%'"></div>
+            </div>
+        </td>
+
         <td th:text="${item.releaseYear}"></td>
         <td th:text="${item.directors}"></td>
         <td>
@@ -122,20 +131,48 @@
                           th:classappend="${item.status.name() == 'COMPLETED' ? 'bg-secondary' : (item.status.name() == 'WATCHING' ? 'bg-warning text-dark' : 'bg-info text-dark')}"
                           th:text="${item.status.title}"></span>
         </td>
+
+        <td onclick="event.stopPropagation()">
+            <a th:href="@{'/edit/' + ${item.id}}" class="btn btn-sm btn-outline-primary" title="Редактировать">
+                <i class="bi bi-pencil-fill"></i>
+            </a>
+            <a th:href="@{'/delete/' + ${item.id}}" class="btn btn-sm btn-outline-danger" title="Удалить"
+               onclick="return confirm('Вы уверены, что хотите удалить эту запись?')">
+                <i class="bi bi-trash-fill"></i>
+            </a>
+        </td>
     </tr>
 
     <tr th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}"
         th:id="'details-' + ${item.id}" class="collapse bg-light">
-        <td colspan="6">
+        <td colspan="7">
             <div class="p-3 border-start border-4 border-success">
-                <h5>Детали сериала</h5>
-                <div class="row mt-2">
-                    <div class="col-md-4">
-                        <strong>Всего серий:</strong> <span th:text="${item.totalEpisodes}"></span>
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+                        <h5>Прогресс просмотра</h5>
+                        <div class="d-flex align-items-center gap-3">
+                            <form th:action="@{'/series/' + ${item.id} + '/dec'}" method="post">
+                                <button class="btn btn-outline-danger btn-sm fw-bold" style="width: 30px;">-</button>
+                            </form>
+
+                            <span class="fs-5 fw-bold" th:text="${item.watchedEpisodes} + ' / ' + ${item.totalEpisodes}"></span>
+
+                            <form th:action="@{'/series/' + ${item.id} + '/inc'}" method="post">
+                                <button class="btn btn-outline-success btn-sm fw-bold" style="width: 30px;">+</button>
+                            </form>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <strong>Просмотрено:</strong> <span th:text="${item.totalWatchedEpisodes}"></span>
+
+                    <div class="w-50">
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar"
+                                 th:style="'width: ' + (${item.totalEpisodes} > 0 ? (${item.watchedEpisodes} * 100 / ${item.totalEpisodes}) : 0) + '%'"
+                                 th:text="${item.totalEpisodes} > 0 ? (${item.watchedEpisodes} * 100 / ${item.totalEpisodes}) + '%' : '0%'">
+                            </div>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </td>
@@ -145,7 +182,6 @@
 
 <div th:if="${items.isEmpty()}" class="text-center mt-5 text-muted">
     <h4>Список пуст 🦕</h4>
-    <p>Попробуйте изменить фильтры или добавьте что-нибудь новое.</p>
 </div>
 
 </body>

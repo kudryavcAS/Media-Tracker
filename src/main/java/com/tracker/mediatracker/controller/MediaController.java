@@ -1,15 +1,13 @@
 package com.tracker.mediatracker.controller;
 
+import com.tracker.mediatracker.model.MediaItem;
 import com.tracker.mediatracker.model.Movie;
 import com.tracker.mediatracker.model.Series;
 import com.tracker.mediatracker.service.MediaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -24,7 +22,6 @@ public class MediaController {
                         Model model) {
 
         model.addAttribute("items", service.getFilteredAndSortedItems(type, status, sort));
-
         model.addAttribute("currentType", type);
         model.addAttribute("currentStatus", status);
         model.addAttribute("currentSort", sort);
@@ -53,6 +50,42 @@ public class MediaController {
     @PostMapping("/save/series")
     public String saveSeries(@ModelAttribute Series series) {
         service.save(series);
+        return "redirect:/";
+    }
+
+    @PostMapping("/series/{id}/inc")
+    public String incrementSeries(@PathVariable Long id, @RequestHeader(value = "referer", required = false) String referer) {
+        service.updateSeriesProgress(id, 1);
+        return "redirect:" + (referer != null ? referer : "/");
+    }
+
+    @PostMapping("/series/{id}/dec")
+    public String decrementSeries(@PathVariable Long id, @RequestHeader(value = "referer", required = false) String referer) {
+        service.updateSeriesProgress(id, -1);
+        return "redirect:" + (referer != null ? referer : "/");
+    }
+
+    @GetMapping("/edit/{id}")
+    public String editItem(@PathVariable Long id, Model model) {
+        MediaItem item = service.findById(id);
+        if (item == null) {
+            return "redirect:/";
+        }
+
+        if (item instanceof Movie movie) {
+            model.addAttribute("movie", movie);
+            return "movie_form";
+        } else if (item instanceof Series series) {
+            model.addAttribute("series", series);
+            return "series_form";
+        }
+
+        return "redirect:/";
+    }
+
+    @GetMapping("/delete/{id}")
+    public String deleteItem(@PathVariable Long id) {
+        service.delete(id);
         return "redirect:/";
     }
 }

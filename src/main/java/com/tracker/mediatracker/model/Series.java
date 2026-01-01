@@ -1,11 +1,11 @@
 package com.tracker.mediatracker.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -14,12 +14,9 @@ import java.util.List;
 public class Series extends MediaItem {
 
     private Integer totalEpisodes;
-    private Integer totalWatchedEpisodes = 0;
+
+    private Integer watchedEpisodes = 0;
 
     @Enumerated(EnumType.STRING)
     private SeriesType seriesType;
-
-    @OneToMany(mappedBy = "series", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
-    private List<Season> seasons = new ArrayList<>();
 }

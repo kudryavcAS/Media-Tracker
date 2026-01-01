@@ -1,11 +1,10 @@
 package com.tracker.mediatracker.service;
 
 import com.tracker.mediatracker.model.MediaItem;
-import com.tracker.mediatracker.model.Season;
+import com.tracker.mediatracker.model.Series;
 import com.tracker.mediatracker.model.SeriesType;
 import com.tracker.mediatracker.model.WatchStatus;
 import com.tracker.mediatracker.repo.MediaItemRepository;
-import com.tracker.mediatracker.repo.SeasonRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 public class MediaService {
 
     private final MediaItemRepository mediaRepository;
-    private final SeasonRepository seasonRepository;
 
     public List<MediaItem> getFilteredAndSortedItems(String typeFilter, String statusFilter, String sort) {
         List<MediaItem> items = fetchItemsByType(typeFilter);
@@ -90,7 +88,20 @@ public class MediaService {
     }
 
     @Transactional
-    public void saveSeason(Season season) {
-        seasonRepository.save(season);
+    public void updateSeriesProgress(Long id, int change) {
+        MediaItem item = mediaRepository.findById(id).orElse(null);
+        if (item instanceof Series series) {
+            int current = series.getWatchedEpisodes() == null ? 0 : series.getWatchedEpisodes();
+            int newVal = current + change;
+            if (newVal < 0) newVal = 0;
+
+            if (series.getTotalEpisodes() != null && newVal >= series.getTotalEpisodes()) {
+                newVal = series.getTotalEpisodes();
+                series.setStatus(WatchStatus.COMPLETED);
+            }
+
+            series.setWatchedEpisodes(newVal);
+            mediaRepository.save(series);
+        }
     }
 }
