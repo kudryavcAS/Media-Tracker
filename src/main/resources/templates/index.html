@@ -5,23 +5,13 @@
 <body class="container mt-4">
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fw-bold">Моё зриво</h1>
-    <div>
-        <a href="/add/movie" class="btn btn-primary me-2">+ Фильм</a>
+    <h1 style="font-weight: bold;">Моё зриво</h1>
+
+    <div class="d-flex gap-2">
+        <a href="/add/movie" class="btn btn-primary">+ Фильм</a>
         <a href="/add/series" class="btn btn-success">+ Сериал</a>
+        <a href="/settings" class="btn btn-secondary">⚙️ Настройки</a>
     </div>
-</div>
-<div style="margin-top: 20px; padding: 10px; border: 1px dashed #ccc;">
-    <h4>Бэкап данных</h4>
-
-    <a href="/backup/export" class="btn">💾 Скачать базу (JSON)</a>
-
-    <hr>
-
-    <form method="POST" action="/backup/import" enctype="multipart/form-data" style="display:inline-block;">
-        <input type="file" name="file" accept=".json" required>
-        <button type="submit">📂 Импортировать</button>
-    </form>
 </div>
 
 <div class="card mb-4 p-3 bg-white">
