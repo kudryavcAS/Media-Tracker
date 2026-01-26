@@ -107,6 +107,11 @@ public class MediaController {
         return REDIRECT_HOME;
     }
 
+    @GetMapping("/settings")
+    public String showSettingsPage() {
+        return "settings";
+    }
+
     private String getSafeRedirect(String referer) {
         if (referer != null && (referer.startsWith("/") || referer.contains("localhost"))) {
             return "redirect:" + referer;
