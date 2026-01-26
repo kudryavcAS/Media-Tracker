@@ -4,6 +4,7 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -13,8 +14,10 @@ import lombok.EqualsAndHashCode;
 @DiscriminatorValue("SERIES")
 public class Series extends MediaItem {
 
+    @Min(value = 1, message = "Количество эпизодов должно быть минимум 1")
     private Integer totalEpisodes;
 
+    @Min(value = 0, message = "Количество просмотренных не может быть отрицательным")
     private Integer watchedEpisodes = 0;
 
     @Enumerated(EnumType.STRING)
