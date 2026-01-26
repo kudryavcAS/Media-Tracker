@@ -11,6 +11,18 @@
         <a href="/add/series" class="btn btn-success">+ Сериал</a>
     </div>
 </div>
+<div style="margin-top: 20px; padding: 10px; border: 1px dashed #ccc;">
+    <h4>Бэкап данных</h4>
+
+    <a href="/backup/export" class="btn">💾 Скачать базу (JSON)</a>
+
+    <hr>
+
+    <form method="POST" action="/backup/import" enctype="multipart/form-data" style="display:inline-block;">
+        <input type="file" name="file" accept=".json" required>
+        <button type="submit">📂 Импортировать</button>
+    </form>
+</div>
 
 <div class="card mb-4 p-3 bg-white">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
