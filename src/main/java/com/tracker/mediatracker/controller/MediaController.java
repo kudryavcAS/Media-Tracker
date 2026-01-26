@@ -4,9 +4,11 @@ import com.tracker.mediatracker.model.MediaItem;
 import com.tracker.mediatracker.model.Movie;
 import com.tracker.mediatracker.model.Series;
 import com.tracker.mediatracker.service.MediaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -42,7 +44,10 @@ public class MediaController {
     }
 
     @PostMapping("/save/movie")
-    public String saveMovie(@ModelAttribute Movie movie) {
+    public String saveMovie(@Valid @ModelAttribute Movie movie, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "movie_form";
+        }
         service.save(movie);
         return REDIRECT_HOME;
     }
@@ -54,7 +59,10 @@ public class MediaController {
     }
 
     @PostMapping("/save/series")
-    public String saveSeries(@ModelAttribute Series series) {
+    public String saveSeries(@Valid @ModelAttribute Series series, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "series_form";
+        }
         service.save(series);
         return REDIRECT_HOME;
     }
@@ -62,13 +70,13 @@ public class MediaController {
     @PostMapping("/series/{id}/inc")
     public String incrementSeries(@PathVariable Long id, @RequestHeader(value = "referer", required = false) String referer) {
         service.updateSeriesProgress(id, 1);
-        return "redirect:" + (referer != null ? referer : "/");
+        return getSafeRedirect(referer);
     }
 
     @PostMapping("/series/{id}/dec")
     public String decrementSeries(@PathVariable Long id, @RequestHeader(value = "referer", required = false) String referer) {
         service.updateSeriesProgress(id, -1);
-        return "redirect:" + (referer != null ? referer : "/");
+        return getSafeRedirect(referer);
     }
 
     @GetMapping("/edit/{id}")
@@ -96,6 +104,13 @@ public class MediaController {
     @GetMapping("/delete/{id}")
     public String deleteItem(@PathVariable Long id) {
         service.delete(id);
+        return REDIRECT_HOME;
+    }
+
+    private String getSafeRedirect(String referer) {
+        if (referer != null && (referer.startsWith("/") || referer.contains("localhost"))) {
+            return "redirect:" + referer;
+        }
         return REDIRECT_HOME;
     }
 }

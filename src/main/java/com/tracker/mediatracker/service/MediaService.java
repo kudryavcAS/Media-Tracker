@@ -2,6 +2,7 @@ package com.tracker.mediatracker.service;
 
 import com.tracker.mediatracker.model.MediaItem;
 import com.tracker.mediatracker.model.Series;
+import com.tracker.mediatracker.model.SortField;
 import com.tracker.mediatracker.model.WatchStatus;
 import com.tracker.mediatracker.repo.MediaItemRepository;
 import com.tracker.mediatracker.repo.MediaSpecifications;
@@ -27,17 +28,11 @@ public class MediaService {
     }
 
     private Sort createSort(String sortParam) {
-        if (sortParam == null) {
-            return Sort.by(Sort.Direction.DESC, "id");
-        }
+        SortField field = SortField.fromString(sortParam);
 
-        return switch (sortParam) {
-            case "title" -> Sort.by("title");
-            case "year" -> Sort.by(Sort.Direction.DESC, "releaseYear");
-            case "duration" -> Sort.by(Sort.Direction.DESC, "durationMinutes");
-            case "director" -> Sort.by("directors");
-            case "type" -> Sort.by("class");
-            default -> Sort.by(Sort.Direction.DESC, "id");
+        return switch (field) {
+            case ID, YEAR, DURATION -> Sort.by(Sort.Direction.DESC, field.getEntityFieldName());
+            default -> Sort.by(field.getEntityFieldName());
         };
     }
 
