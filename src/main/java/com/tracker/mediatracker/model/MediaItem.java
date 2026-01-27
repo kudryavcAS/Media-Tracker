@@ -21,6 +21,7 @@ import lombok.Data;
         @JsonSubTypes.Type(value = Movie.class, name = "MOVIE"),
         @JsonSubTypes.Type(value = Series.class, name = "SERIES")
 })
+
 public abstract class MediaItem {
 
     public static final String FIELD_TITLE = "title";
