@@ -38,14 +38,17 @@ public class BackupController {
     }
 
     @PostMapping("/import")
-    public String importData(@RequestParam("file") MultipartFile file) {
+    public String importData(@RequestParam("file") MultipartFile file,
+                             @RequestParam(value = "mode", defaultValue = "append") String mode) {
         if (file.isEmpty()) {
             return "redirect:/?error=empty_file";
         }
         try {
-            backupService.importData(file);
+            boolean clear = "overwrite".equals(mode);
+            backupService.importData(file, clear);
             return "redirect:/?success=imported";
-        } catch (IOException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             return "redirect:/?error=import_failed";
         }
     }

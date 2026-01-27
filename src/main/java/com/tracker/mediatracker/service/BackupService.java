@@ -25,14 +25,23 @@ public class BackupService {
 
     public byte[] exportData() throws IOException {
         List<MediaItem> allItems = repository.findAll();
-        return objectMapper.writeValueAsBytes(allItems);
+
+        return objectMapper
+                .writerFor(new TypeReference<List<MediaItem>>() {
+                })
+                .writeValueAsBytes(allItems);
     }
 
     @Transactional
-    public void importData(MultipartFile file) throws IOException {
+    public void importData(MultipartFile file, boolean clearBeforeImport) throws IOException {
+        if (clearBeforeImport) {
+            repository.deleteAll();
+        }
+
         List<MediaItem> items = objectMapper.readValue(
                 file.getInputStream(),
-                new TypeReference<>() {}
+                new TypeReference<>() {
+                }
         );
 
         items.forEach(item -> item.setId(null));

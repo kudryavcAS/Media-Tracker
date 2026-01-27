@@ -1,8 +1,19 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: head('Моё зриво')}">
+    <title>Моё зриво</title>
 </head>
 <body class="container mt-4">
+
+<style>
+    .row-completed, .row-completed > td {
+        background-color: #d1e7dd !important;
+    }
+
+    .table-hover tbody tr:hover.row-completed, .table-hover tbody tr:hover.row-completed > td {
+        background-color: #c1d6cc !important;
+    }
+</style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 style="font-weight: bold;">Моё зриво</h1>
@@ -54,7 +65,7 @@
 
                 <div class="input-group">
                     <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Найти..." th:value="${currentQuery}">
+                    <input type="text" name="q" class="form-control" placeholder="Найти..." th:value="${currentQuery}" aria-label="Поиск">
                 </div>
             </form>
 
@@ -63,7 +74,7 @@
                 <input type="hidden" name="sort" th:value="${currentSort}">
                 <input type="hidden" name="q" th:value="${currentQuery}">
 
-                <select name="status" class="form-select" style="width: 150px;"
+                <select name="status" class="form-select" style="width: 150px;" aria-label="Фильтр по статусу"
                         onchange="document.getElementById('statusForm').submit()">
                     <option value="ALL" th:selected="${currentStatus == 'ALL'}">Любой статус</option>
                     <option th:each="st : ${T(com.tracker.mediatracker.model.WatchStatus).values()}"
@@ -112,22 +123,27 @@
 
     <tbody th:each="item : ${items}">
     <tr class="clickable-row"
+        th:classappend="${item.status.name() == 'COMPLETED'} ? 'row-completed'"
         data-bs-toggle="collapse"
         th:data-bs-target="'#details-' + ${item.id}">
 
         <td class="ps-3">
             <span th:if="${item instanceof T(com.tracker.mediatracker.model.Movie)}"
                   class="badge bg-primary">Фильм</span>
-            <span th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}" class="badge bg-success"
-                  th:text="${item.seriesType.title}"></span>
+            <span th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}"
+                  th:object="${item}"
+                  class="badge bg-success"
+                  th:text="*{seriesType.title}"></span>
         </td>
 
         <td class="fw-bold">
             <span class="searchable" th:text="${item.title}"></span>
-            <div th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}" class="progress mt-1"
+            <div th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}"
+                 th:with="s=${item}"
+                 class="progress mt-1"
                  style="height: 5px; width: 100px;">
                 <div class="progress-bar bg-success" role="progressbar"
-                     th:style="'width: ' + (${item.totalEpisodes} > 0 ? (${item.watchedEpisodes} * 100 / ${item.totalEpisodes}) : 0) + '%'"></div>
+                     th:style="'width: ' + (${s.totalEpisodes} > 0 ? (${s.watchedEpisodes} * 100 / ${s.totalEpisodes}) : 0) + '%'"></div>
             </div>
         </td>
 
@@ -138,9 +154,9 @@
         </td>
 
         <td>
-                    <span class="badge"
-                          th:classappend="${item.status.name() == 'COMPLETED' ? 'bg-secondary' : (item.status.name() == 'WATCHING' ? 'bg-warning text-dark' : 'bg-info text-dark')}"
-                          th:text="${item.status.title}"></span>
+            <span class="badge"
+                  th:classappend="${item.status.name() == 'COMPLETED' ? 'bg-secondary' : (item.status.name() == 'WATCHING' ? 'bg-warning text-dark' : 'bg-info text-dark')}"
+                  th:text="${item.status.title}"></span>
         </td>
 
         <td class="pe-3" onclick="event.stopPropagation()">
@@ -155,6 +171,7 @@
     </tr>
 
     <tr th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}"
+        th:with="seriesItem=${item}"
         th:id="'details-' + ${item.id}" class="collapse bg-light">
         <td colspan="7">
             <div class="p-3 border-start border-4 border-success">
@@ -163,14 +180,14 @@
                     <div>
                         <h5>Прогресс просмотра</h5>
                         <div class="d-flex align-items-center gap-3">
-                            <form th:action="@{'/series/' + ${item.id} + '/dec'}" method="post">
+                            <form th:action="@{'/series/' + ${seriesItem.id} + '/dec'}" method="post">
                                 <button class="btn btn-outline-danger btn-sm fw-bold" style="width: 30px;">-</button>
                             </form>
 
                             <span class="fs-5 fw-bold"
-                                  th:text="${item.watchedEpisodes} + ' / ' + ${item.totalEpisodes}"></span>
+                                  th:text="${seriesItem.watchedEpisodes} + ' / ' + ${seriesItem.totalEpisodes}"></span>
 
-                            <form th:action="@{'/series/' + ${item.id} + '/inc'}" method="post">
+                            <form th:action="@{'/series/' + ${seriesItem.id} + '/inc'}" method="post">
                                 <button class="btn btn-outline-success btn-sm fw-bold" style="width: 30px;">+</button>
                             </form>
                         </div>
@@ -180,8 +197,8 @@
                         <div class="progress" style="height: 25px;">
                             <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
                                  role="progressbar"
-                                 th:style="'width: ' + (${item.totalEpisodes} > 0 ? (${item.watchedEpisodes} * 100 / ${item.totalEpisodes}) : 0) + '%'"
-                                 th:text="${item.totalEpisodes} > 0 ? (${item.watchedEpisodes} * 100 / ${item.totalEpisodes}) + '%' : '0%'">
+                                 th:style="'width: ' + (${seriesItem.totalEpisodes} > 0 ? (${seriesItem.watchedEpisodes} * 100 / ${seriesItem.totalEpisodes}) : 0) + '%'"
+                                 th:text="${seriesItem.totalEpisodes} > 0 ? (${seriesItem.watchedEpisodes} * 100 / ${seriesItem.totalEpisodes}) + '%' : '0%'">
                             </div>
                         </div>
                     </div>
