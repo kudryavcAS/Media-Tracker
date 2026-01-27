@@ -31,7 +31,8 @@ public class MediaService {
         SortField field = SortField.fromString(sortParam);
 
         return switch (field) {
-            case ID, YEAR, DURATION -> Sort.by(Sort.Direction.DESC, field.getEntityFieldName());
+            case ID -> Sort.by(Sort.Direction.ASC, field.getEntityFieldName());
+            case YEAR, DURATION -> Sort.by(Sort.Direction.DESC, field.getEntityFieldName());
             default -> Sort.by(field.getEntityFieldName());
         };
     }
