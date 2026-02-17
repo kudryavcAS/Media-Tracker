@@ -6,8 +6,21 @@ services:
     container_name: media-tracker
     ports:
       - "8080:8080"
-    volumes:
-      - ./docker_data:/app/db
+    depends_on:
+      - db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:sqlite:/app/db/media.db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/zrivo_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    container_name: media-postgres
+    environment:
+      - POSTGRES_DB=zrivo_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
