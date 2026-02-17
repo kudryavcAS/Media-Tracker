@@ -1,6 +1,7 @@
 package com.tracker.mediatracker.repo;
 
 import com.tracker.mediatracker.model.*;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
@@ -33,15 +34,18 @@ public class MediaSpecifications {
                 WatchStatus status = lookupEnum(WatchStatus.class, statusFilter);
                 if (status != null) {
                     predicates.add(cb.equal(root.get(MediaItem.FIELD_STATUS), status));
-                } else {
-                    predicates.add(cb.disjunction());
                 }
             }
 
             if (StringUtils.hasText(query)) {
                 String search = "%" + query.toLowerCase() + "%";
+
                 Predicate titleLike = cb.like(cb.lower(root.get(MediaItem.FIELD_TITLE)), search);
-                Predicate directorLike = cb.like(cb.lower(root.get(MediaItem.FIELD_DIRECTORS)), search);
+
+                Expression<String> directorPath = root.get(MediaItem.FIELD_DIRECTORS);
+                Expression<String> safeDirector = cb.coalesce(directorPath, "");
+                Predicate directorLike = cb.like(cb.lower(safeDirector), search);
+
                 predicates.add(cb.or(titleLike, directorLike));
             }
 
