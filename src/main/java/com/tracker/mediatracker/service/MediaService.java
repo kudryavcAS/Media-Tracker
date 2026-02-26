@@ -58,11 +58,18 @@ public class MediaService {
                 .map(Series.class::cast)
                 .ifPresent(series -> {
                     int current = series.getWatchedEpisodes() == null ? 0 : series.getWatchedEpisodes();
+                    int total = series.getTotalEpisodes() == null ? 0 : series.getTotalEpisodes();
                     int newVal = Math.max(0, current + change);
 
-                    if (series.getTotalEpisodes() != null && newVal >= series.getTotalEpisodes()) {
-                        newVal = series.getTotalEpisodes();
+                    if (total > 0 && newVal >= total) {
+                        newVal = total;
                         series.setStatus(WatchStatus.COMPLETED);
+                    } else if (newVal > 0 && current == 0) {
+                        series.setStatus(WatchStatus.WATCHING);
+                    } else if (newVal == 0) {
+                        series.setStatus(WatchStatus.PLANNED);
+                    } else if (series.getStatus() == WatchStatus.COMPLETED && newVal < total) {
+                        series.setStatus(WatchStatus.WATCHING);
                     }
 
                     series.setWatchedEpisodes(newVal);

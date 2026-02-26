@@ -65,7 +65,8 @@
 
                 <div class="input-group">
                     <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Найти..." th:value="${currentQuery}" aria-label="Поиск">
+                    <input type="text" name="q" class="form-control" placeholder="Найти..." th:value="${currentQuery}"
+                           aria-label="Поиск">
                 </div>
             </form>
 
@@ -123,6 +124,7 @@
 
     <tbody th:each="item : ${items}">
     <tr class="clickable-row"
+        th:id="'main-row-' + ${item.id}"
         th:classappend="${item.status.name() == 'COMPLETED'} ? 'row-completed'"
         data-bs-toggle="collapse"
         th:data-bs-target="'#details-' + ${item.id}">
@@ -131,19 +133,18 @@
             <span th:if="${item instanceof T(com.tracker.mediatracker.model.Movie)}"
                   class="badge bg-primary">Фильм</span>
             <span th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}"
-                  th:object="${item}"
                   class="badge bg-success"
-                  th:text="*{seriesType.title}"></span>
+                  th:text="${item.seriesType.title}"></span>
         </td>
 
         <td class="fw-bold">
             <span class="searchable" th:text="${item.title}"></span>
             <div th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}"
-                 th:with="s=${item}"
+                 th:with="total=${item.totalEpisodes ?: 0}, watched=${item.watchedEpisodes ?: 0}"
                  class="progress mt-1"
                  style="height: 5px; width: 100px;">
                 <div class="progress-bar bg-success" role="progressbar"
-                     th:style="'width: ' + (${s.totalEpisodes} > 0 ? (${s.watchedEpisodes} * 100 / ${s.totalEpisodes}) : 0) + '%'"></div>
+                     th:style="'width: ' + (${total > 0 ? (watched * 100 / total) : 0}) + '%'"></div>
             </div>
         </td>
 
@@ -171,7 +172,7 @@
     </tr>
 
     <tr th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}"
-        th:with="seriesItem=${item}"
+        th:with="total=${item.totalEpisodes ?: 0}, watched=${item.watchedEpisodes ?: 0}"
         th:id="'details-' + ${item.id}" class="collapse bg-light">
         <td colspan="7">
             <div class="p-3 border-start border-4 border-success">
@@ -180,14 +181,16 @@
                     <div>
                         <h5>Прогресс просмотра</h5>
                         <div class="d-flex align-items-center gap-3">
-                            <form th:action="@{'/series/' + ${seriesItem.id} + '/dec'}" method="post">
+                            <form th:action="@{'/series/' + ${item.id} + '/dec'}" method="post" class="m-0 ajax-form"
+                                  th:data-id="${item.id}">
                                 <button class="btn btn-outline-danger btn-sm fw-bold" style="width: 30px;">-</button>
                             </form>
 
                             <span class="fs-5 fw-bold"
-                                  th:text="${seriesItem.watchedEpisodes} + ' / ' + ${seriesItem.totalEpisodes}"></span>
+                                  th:text="${watched} + ' / ' + (${total > 0 ? total : '?'})"></span>
 
-                            <form th:action="@{'/series/' + ${seriesItem.id} + '/inc'}" method="post">
+                            <form th:action="@{'/series/' + ${item.id} + '/inc'}" method="post" class="m-0 ajax-form"
+                                  th:data-id="${item.id}">
                                 <button class="btn btn-outline-success btn-sm fw-bold" style="width: 30px;">+</button>
                             </form>
                         </div>
@@ -197,8 +200,8 @@
                         <div class="progress" style="height: 25px;">
                             <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
                                  role="progressbar"
-                                 th:style="'width: ' + (${seriesItem.totalEpisodes} > 0 ? (${seriesItem.watchedEpisodes} * 100 / ${seriesItem.totalEpisodes}) : 0) + '%'"
-                                 th:text="${seriesItem.totalEpisodes} > 0 ? (${seriesItem.watchedEpisodes} * 100 / ${seriesItem.totalEpisodes}) + '%' : '0%'">
+                                 th:style="'width: ' + (${total > 0 ? (watched * 100 / total) : 0}) + '%'"
+                                 th:text="${total > 0 ? #numbers.formatInteger((watched * 100.0 / total), 1) + '%' : '0%'}">
                             </div>
                         </div>
                     </div>
@@ -215,19 +218,70 @@
 </div>
 
 <script th:inline="javascript">
-    document.addEventListener("DOMContentLoaded", function () {
+    function highlightSearch() {
         const query = /*[[${currentQuery}]]*/ "";
-
         if (query && query.length > 0) {
             const elements = document.querySelectorAll('.searchable');
             const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(`(${safeQuery})`, 'gi');
 
             elements.forEach(el => {
-                if (el.textContent.toLowerCase().includes(query.toLowerCase())) {
-                    el.innerHTML = el.textContent.replace(regex, '<mark>$1</mark>');
+                if (!el.innerHTML.includes('<mark>')) {
+                    if (el.textContent.toLowerCase().includes(query.toLowerCase())) {
+                        el.innerHTML = el.textContent.replace(regex, '<mark>$1</mark>');
+                    }
                 }
             });
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        highlightSearch();
+    });
+
+    document.addEventListener('submit', async function (e) {
+        if (e.target.matches('.ajax-form')) {
+            e.preventDefault();
+
+            const form = e.target;
+            const seriesId = form.getAttribute('data-id');
+            const btns = form.querySelectorAll('button');
+
+            btns.forEach(b => b.disabled = true);
+
+            try {
+                const response = await fetch(form.action, {method: 'POST'});
+
+                if (response.ok) {
+                    const html = await response.text();
+
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    const oldMainRow = document.getElementById('main-row-' + seriesId);
+                    const newMainRow = doc.getElementById('main-row-' + seriesId);
+
+                    const oldDetailsRow = document.getElementById('details-' + seriesId);
+                    const newDetailsRow = doc.getElementById('details-' + seriesId);
+
+                    if (oldMainRow && newMainRow) {
+                        oldMainRow.innerHTML = newMainRow.innerHTML;
+                        oldMainRow.className = newMainRow.className;
+                    }
+                    if (oldDetailsRow && newDetailsRow) {
+                        oldDetailsRow.innerHTML = newDetailsRow.innerHTML;
+                    }
+
+                    highlightSearch();
+                } else {
+                    form.submit();
+                }
+            } catch (error) {
+                console.error('Ошибка AJAX:', error);
+                form.submit();
+            } finally {
+                btns.forEach(b => b.disabled = false);
+            }
         }
     });
 </script>
