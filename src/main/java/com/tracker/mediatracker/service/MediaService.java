@@ -76,4 +76,17 @@ public class MediaService {
                     mediaRepository.save(series);
                 });
     }
+
+    @Transactional
+    public void markAsCompleted(Long id) {
+        mediaRepository.findById(id).ifPresent(item -> {
+            item.setStatus(WatchStatus.COMPLETED);
+            if (item instanceof Series series) {
+                if (series.getTotalEpisodes() != null) {
+                    series.setWatchedEpisodes(series.getTotalEpisodes());
+                }
+            }
+            mediaRepository.save(item);
+        });
+    }
 }

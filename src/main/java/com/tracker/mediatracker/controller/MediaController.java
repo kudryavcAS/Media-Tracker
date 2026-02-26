@@ -79,6 +79,12 @@ public class MediaController {
         return getSafeRedirect(referer);
     }
 
+    @PostMapping("/item/{id}/complete")
+    public String markAsCompleted(@PathVariable Long id, @RequestHeader(value = "referer", required = false) String referer) {
+        service.markAsCompleted(id);
+        return getSafeRedirect(referer);
+    }
+
     @GetMapping("/edit/{id}")
     public String editItem(@PathVariable Long id, Model model) {
         MediaItem item = service.findById(id);

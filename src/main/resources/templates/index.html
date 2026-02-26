@@ -65,8 +65,7 @@
 
                 <div class="input-group">
                     <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Найти..." th:value="${currentQuery}"
-                           aria-label="Поиск">
+                    <input type="text" name="q" class="form-control" placeholder="Найти..." th:value="${currentQuery}" aria-label="Поиск">
                 </div>
             </form>
 
@@ -118,7 +117,7 @@
                 время</a>
         </th>
         <th>Статус</th>
-        <th class="pe-3">Действия</th>
+        <th class="pe-3 text-end">Действия</th>
     </tr>
     </thead>
 
@@ -161,13 +160,17 @@
         </td>
 
         <td class="pe-3" onclick="event.stopPropagation()">
-            <a th:href="@{'/edit/' + ${item.id}}" class="btn btn-sm btn-outline-primary" title="Редактировать">
-                <i class="bi bi-pencil-fill"></i>
-            </a>
-            <a th:href="@{'/delete/' + ${item.id}}" class="btn btn-sm btn-outline-danger" title="Удалить"
-               onclick="return confirm('Вы уверены, что хотите удалить эту запись?')">
-                <i class="bi bi-trash-fill"></i>
-            </a>
+            <div class="d-flex justify-content-end gap-2">
+                <form th:if="${item.status.name() != 'COMPLETED'}" th:action="@{'/item/' + ${item.id} + '/complete'}" method="post" class="m-0 ajax-form" th:data-id="${item.id}">
+                    <button class="btn btn-sm btn-outline-secondary border-0" title="Отметить просмотренным">
+                        <i class="bi bi-check-circle fs-5"></i>
+                    </button>
+                </form>
+
+                <a th:href="@{'/edit/' + ${item.id}}" class="btn btn-sm btn-outline-primary border-0" title="Редактировать">
+                    <i class="bi bi-pencil-fill fs-5"></i>
+                </a>
+            </div>
         </td>
     </tr>
 
@@ -177,25 +180,18 @@
         <td colspan="7">
             <div class="p-3 border-start border-4 border-success">
                 <div class="d-flex justify-content-between align-items-center">
-
                     <div>
                         <h5>Прогресс просмотра</h5>
                         <div class="d-flex align-items-center gap-3">
-                            <form th:action="@{'/series/' + ${item.id} + '/dec'}" method="post" class="m-0 ajax-form"
-                                  th:data-id="${item.id}">
+                            <form th:action="@{'/series/' + ${item.id} + '/dec'}" method="post" class="m-0 ajax-form" th:data-id="${item.id}">
                                 <button class="btn btn-outline-danger btn-sm fw-bold" style="width: 30px;">-</button>
                             </form>
-
-                            <span class="fs-5 fw-bold"
-                                  th:text="${watched} + ' / ' + (${total > 0 ? total : '?'})"></span>
-
-                            <form th:action="@{'/series/' + ${item.id} + '/inc'}" method="post" class="m-0 ajax-form"
-                                  th:data-id="${item.id}">
+                            <span class="fs-5 fw-bold" th:text="${watched} + ' / ' + (${total > 0 ? total : '?'})"></span>
+                            <form th:action="@{'/series/' + ${item.id} + '/inc'}" method="post" class="m-0 ajax-form" th:data-id="${item.id}">
                                 <button class="btn btn-outline-success btn-sm fw-bold" style="width: 30px;">+</button>
                             </form>
                         </div>
                     </div>
-
                     <div class="w-50">
                         <div class="progress" style="height: 25px;">
                             <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
@@ -205,7 +201,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </td>
@@ -224,7 +219,6 @@
             const elements = document.querySelectorAll('.searchable');
             const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(`(${safeQuery})`, 'gi');
-
             elements.forEach(el => {
                 if (!el.innerHTML.includes('<mark>')) {
                     if (el.textContent.toLowerCase().includes(query.toLowerCase())) {
@@ -239,7 +233,7 @@
         highlightSearch();
     });
 
-    document.addEventListener('submit', async function (e) {
+    document.addEventListener('submit', async function(e) {
         if (e.target.matches('.ajax-form')) {
             e.preventDefault();
 
@@ -250,7 +244,7 @@
             btns.forEach(b => b.disabled = true);
 
             try {
-                const response = await fetch(form.action, {method: 'POST'});
+                const response = await fetch(form.action, { method: 'POST' });
 
                 if (response.ok) {
                     const html = await response.text();
@@ -277,7 +271,7 @@
                     form.submit();
                 }
             } catch (error) {
-                console.error('Ошибка AJAX:', error);
+                console.error(error);
                 form.submit();
             } finally {
                 btns.forEach(b => b.disabled = false);
