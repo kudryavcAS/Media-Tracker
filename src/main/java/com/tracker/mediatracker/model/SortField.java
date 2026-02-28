@@ -9,7 +9,7 @@ public enum SortField {
     YEAR("releaseYear"),
     DURATION("durationMinutes"),
     DIRECTOR("directors"),
-    TYPE("class");
+    TYPE("contentType");
 
     private final String entityFieldName;
 
