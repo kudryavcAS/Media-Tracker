@@ -21,7 +21,6 @@ import lombok.Data;
         @JsonSubTypes.Type(value = Movie.class, name = "MOVIE"),
         @JsonSubTypes.Type(value = Series.class, name = "SERIES")
 })
-
 public abstract class MediaItem {
 
     public static final String FIELD_TITLE = "title";
@@ -34,6 +33,9 @@ public abstract class MediaItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "content_type", insertable = false, updatable = false)
+    private String contentType;
 
     @NotBlank(message = "Название не может быть пустым")
     private String title;
