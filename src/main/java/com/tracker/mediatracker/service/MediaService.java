@@ -43,6 +43,19 @@ public class MediaService {
 
     @Transactional
     public void save(MediaItem item) {
+        if (item instanceof Series series) {
+            int watched = series.getWatchedEpisodes() == null ? 0 : series.getWatchedEpisodes();
+            int total = series.getTotalEpisodes() == null ? 0 : series.getTotalEpisodes();
+
+            if (total > 0 && watched >= total) {
+                series.setWatchedEpisodes(total);
+                series.setStatus(WatchStatus.COMPLETED);
+            } else if (watched > 0 && series.getStatus() == WatchStatus.PLANNED) {
+                series.setStatus(WatchStatus.WATCHING);
+            } else if (watched == 0 && series.getStatus() == WatchStatus.WATCHING) {
+                series.setStatus(WatchStatus.PLANNED);
+            }
+        }
         mediaRepository.save(item);
     }
 
@@ -63,17 +76,15 @@ public class MediaService {
 
                     if (total > 0 && newVal >= total) {
                         newVal = total;
-                        series.setStatus(WatchStatus.COMPLETED);
-                    } else if (newVal > 0 && current == 0) {
-                        series.setStatus(WatchStatus.WATCHING);
-                    } else if (newVal == 0) {
-                        series.setStatus(WatchStatus.PLANNED);
-                    } else if (series.getStatus() == WatchStatus.COMPLETED && newVal < total) {
-                        series.setStatus(WatchStatus.WATCHING);
                     }
 
                     series.setWatchedEpisodes(newVal);
-                    mediaRepository.save(series);
+
+                    if (series.getStatus() == WatchStatus.COMPLETED && newVal < total) {
+                        series.setStatus(WatchStatus.WATCHING);
+                    }
+
+                    save(series);
                 });
     }
 

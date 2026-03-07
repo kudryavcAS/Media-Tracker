@@ -49,7 +49,7 @@ public class MediaController {
             return "movie_form";
         }
         service.save(movie);
-        return REDIRECT_HOME;
+        return "redirect:/#main-row-" + movie.getId();
     }
 
     @GetMapping("/add/series")
@@ -64,7 +64,7 @@ public class MediaController {
             return "series_form";
         }
         service.save(series);
-        return REDIRECT_HOME;
+        return "redirect:/#main-row-" + series.getId();
     }
 
     @PostMapping("/series/{id}/inc")
