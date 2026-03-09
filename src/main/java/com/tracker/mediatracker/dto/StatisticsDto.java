@@ -2,6 +2,8 @@ package com.tracker.mediatracker.dto;
 
 import lombok.Data;
 
+import java.util.Locale;
+
 @Data
 public class StatisticsDto {
 
@@ -33,5 +35,14 @@ public class StatisticsDto {
             return days + " дн. " + remainingHours + " ч. " + mins + " мин.";
         }
         return hours + " ч. " + mins + " мин.";
+    }
+
+    public String formatMinutes(long minutes) {
+        return String.format(Locale.US, "%,d", minutes).replace(',', ' ') + " мин.";
+    }
+
+    public String formatHours(long minutes) {
+        long hours = Math.round(minutes / 60.0);
+        return "~" + hours + " ч.";
     }
 }
