@@ -1,7 +1,10 @@
 package com.tracker.mediatracker.service;
 
+import com.tracker.mediatracker.dto.StatisticsDto;
 import com.tracker.mediatracker.model.MediaItem;
+import com.tracker.mediatracker.model.Movie;
 import com.tracker.mediatracker.model.Series;
+import com.tracker.mediatracker.model.SeriesType;
 import com.tracker.mediatracker.model.SortField;
 import com.tracker.mediatracker.model.WatchStatus;
 import com.tracker.mediatracker.repo.MediaItemRepository;
@@ -23,13 +26,11 @@ public class MediaService {
     public List<MediaItem> getFilteredAndSortedItems(String typeFilter, String statusFilter, String sortParam, String query) {
         Specification<MediaItem> spec = MediaSpecifications.withFilters(typeFilter, statusFilter, query);
         Sort sort = createSort(sortParam);
-
         return mediaRepository.findAll(spec, sort);
     }
 
     private Sort createSort(String sortParam) {
         SortField field = SortField.fromString(sortParam);
-
         return switch (field) {
             case ID -> Sort.by(Sort.Direction.ASC, field.getEntityFieldName());
             case YEAR, DURATION -> Sort.by(Sort.Direction.DESC, field.getEntityFieldName());
@@ -99,5 +100,80 @@ public class MediaService {
             }
             mediaRepository.save(item);
         });
+    }
+
+    public StatisticsDto getStatistics() {
+        List<MediaItem> items = mediaRepository.findAll();
+        StatisticsDto stats = new StatisticsDto();
+
+        stats.setTotalItems(items.size());
+
+        long totalDurationAll = 0;
+        long watchedDuration = 0;
+
+        long movieCount = 0;
+        long seriesCount = 0;
+
+        long movieWatchedTime = 0;
+        long liveActionWatchedTime = 0;
+        long animeWatchedTime = 0;
+        long animationWatchedTime = 0;
+
+        long completedCount = 0;
+        long watchingCount = 0;
+        long plannedCount = 0;
+        long droppedCount = 0;
+
+        for (MediaItem item : items) {
+            long itemTotalTime = item.getDurationMinutes() != null ? item.getDurationMinutes() : 0;
+            totalDurationAll += itemTotalTime;
+
+            long itemWatchedTime = 0;
+
+            switch (item.getStatus()) {
+                case COMPLETED -> completedCount++;
+                case WATCHING -> watchingCount++;
+                case PLANNED -> plannedCount++;
+                case DROPPED -> droppedCount++;
+            }
+
+            if (item instanceof Movie) {
+                movieCount++;
+                if (item.getStatus() == WatchStatus.COMPLETED) {
+                    itemWatchedTime = itemTotalTime;
+                    movieWatchedTime += itemWatchedTime;
+                }
+            } else if (item instanceof Series series) {
+                seriesCount++;
+                int watchedEps = series.getWatchedEpisodes() != null ? series.getWatchedEpisodes() : 0;
+                int totalEps = series.getTotalEpisodes() != null && series.getTotalEpisodes() > 0 ? series.getTotalEpisodes() : 1;
+
+                if (series.getStatus() == WatchStatus.COMPLETED) {
+                    itemWatchedTime = itemTotalTime;
+                } else {
+                    itemWatchedTime = (long) ((double) itemTotalTime / totalEps * watchedEps);
+                }
+
+                if (series.getSeriesType() == SeriesType.LIVE_ACTION) liveActionWatchedTime += itemWatchedTime;
+                if (series.getSeriesType() == SeriesType.ANIME) animeWatchedTime += itemWatchedTime;
+                if (series.getSeriesType() == SeriesType.ANIMATION) animationWatchedTime += itemWatchedTime;
+            }
+            watchedDuration += itemWatchedTime;
+        }
+
+        stats.setTotalDurationMinutes(totalDurationAll);
+        stats.setWatchedDurationMinutes(watchedDuration);
+        stats.setMovieCount(movieCount);
+        stats.setSeriesCount(seriesCount);
+        stats.setMovieWatchedMinutes(movieWatchedTime);
+        stats.setLiveActionWatchedMinutes(liveActionWatchedTime);
+        stats.setAnimeWatchedMinutes(animeWatchedTime);
+        stats.setAnimationWatchedMinutes(animationWatchedTime);
+        stats.setCompletedCount(completedCount);
+        stats.setWatchingCount(watchingCount);
+        stats.setPlannedCount(plannedCount);
+        stats.setDroppedCount(droppedCount);
+
+        return stats;
     }
 }
