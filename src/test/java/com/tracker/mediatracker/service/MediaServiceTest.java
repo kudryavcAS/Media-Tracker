@@ -12,11 +12,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MediaServiceTest {
@@ -28,7 +29,96 @@ class MediaServiceTest {
     private MediaService mediaService;
 
     @Test
-    void shouldChangeStatusToCompleted_WhenAllEpisodesWatched() {
+    void save_Movie_ShouldNotAlterStatus() {
+        Movie movie = new Movie();
+        movie.setId(1L);
+        movie.setStatus(WatchStatus.PLANNED);
+
+        mediaService.save(movie);
+
+        assertThat(movie.getStatus()).isEqualTo(WatchStatus.PLANNED);
+        verify(mediaRepository, times(1)).save(movie);
+    }
+
+    @Test
+    void save_Series_WhenWatchedEqualsTotal_ShouldSetCompleted() {
+        Series series = new Series();
+        series.setTotalEpisodes(10);
+        series.setWatchedEpisodes(10);
+        series.setStatus(WatchStatus.WATCHING);
+
+        mediaService.save(series);
+
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.COMPLETED);
+    }
+
+    @Test
+    void save_Series_WhenWatchedExceedsTotal_ShouldCapAndSetCompleted() {
+        Series series = new Series();
+        series.setTotalEpisodes(10);
+        series.setWatchedEpisodes(15);
+        series.setStatus(WatchStatus.WATCHING);
+
+        mediaService.save(series);
+
+        assertThat(series.getWatchedEpisodes()).isEqualTo(10);
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.COMPLETED);
+    }
+
+    @Test
+    void save_Series_WhenWatchedIsZeroAndStatusWatching_ShouldSetPlanned() {
+        Series series = new Series();
+        series.setTotalEpisodes(10);
+        series.setWatchedEpisodes(0);
+        series.setStatus(WatchStatus.WATCHING);
+
+        mediaService.save(series);
+
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.PLANNED);
+    }
+
+    @Test
+    void save_Series_WhenWatchedGreaterThanZeroAndStatusPlanned_ShouldSetWatching() {
+        Series series = new Series();
+        series.setTotalEpisodes(10);
+        series.setWatchedEpisodes(1);
+        series.setStatus(WatchStatus.PLANNED);
+
+        mediaService.save(series);
+
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.WATCHING);
+    }
+
+    @Test
+    void save_Series_WhenWatchedLessThanTotalAndStatusCompleted_ShouldSetWatching() {
+        Series series = new Series();
+        series.setTotalEpisodes(10);
+        series.setWatchedEpisodes(5);
+        series.setStatus(WatchStatus.COMPLETED);
+
+        mediaService.save(series);
+
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.WATCHING);
+    }
+
+    @Test
+    void updateSeriesProgress_WhenIncrementingFromZero_ShouldChangeToWatching() {
+        Series series = new Series();
+        series.setId(1L);
+        series.setTotalEpisodes(24);
+        series.setWatchedEpisodes(0);
+        series.setStatus(WatchStatus.PLANNED);
+
+        when(mediaRepository.findById(1L)).thenReturn(Optional.of(series));
+
+        mediaService.updateSeriesProgress(1L, 1);
+
+        assertThat(series.getWatchedEpisodes()).isEqualTo(1);
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.WATCHING);
+    }
+
+    @Test
+    void updateSeriesProgress_WhenIncrementingToTotal_ShouldChangeToCompleted() {
         Series series = new Series();
         series.setId(1L);
         series.setTotalEpisodes(10);
@@ -44,7 +134,23 @@ class MediaServiceTest {
     }
 
     @Test
-    void shouldChangeStatusToWatching_WhenProgressDecreasedBelowTotal() {
+    void updateSeriesProgress_WhenIncrementingAboveTotal_ShouldCapAtTotal() {
+        Series series = new Series();
+        series.setId(1L);
+        series.setTotalEpisodes(5);
+        series.setWatchedEpisodes(5);
+        series.setStatus(WatchStatus.COMPLETED);
+
+        when(mediaRepository.findById(1L)).thenReturn(Optional.of(series));
+
+        mediaService.updateSeriesProgress(1L, 2);
+
+        assertThat(series.getWatchedEpisodes()).isEqualTo(5);
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.COMPLETED);
+    }
+
+    @Test
+    void updateSeriesProgress_WhenDecrementingBelowTotal_ShouldChangeToWatching() {
         Series series = new Series();
         series.setId(1L);
         series.setTotalEpisodes(10);
@@ -53,45 +159,104 @@ class MediaServiceTest {
 
         when(mediaRepository.findById(1L)).thenReturn(Optional.of(series));
 
-        mediaService.updateSeriesProgress(1L, -5);
+        mediaService.updateSeriesProgress(1L, -1);
 
-        assertThat(series.getWatchedEpisodes()).isEqualTo(5);
+        assertThat(series.getWatchedEpisodes()).isEqualTo(9);
         assertThat(series.getStatus()).isEqualTo(WatchStatus.WATCHING);
     }
 
     @Test
-    void shouldChangeStatusToWatching_WhenFirstEpisodeWatched() {
+    void updateSeriesProgress_WhenDecrementingToZero_ShouldChangeToPlanned() {
         Series series = new Series();
-        series.setId(2L);
-        series.setTotalEpisodes(24);
+        series.setId(1L);
+        series.setTotalEpisodes(10);
+        series.setWatchedEpisodes(1);
+        series.setStatus(WatchStatus.WATCHING);
+
+        when(mediaRepository.findById(1L)).thenReturn(Optional.of(series));
+
+        mediaService.updateSeriesProgress(1L, -1);
+
+        assertThat(series.getWatchedEpisodes()).isEqualTo(0);
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.PLANNED);
+    }
+
+    @Test
+    void updateSeriesProgress_WhenDecrementingBelowZero_ShouldCapAtZero() {
+        Series series = new Series();
+        series.setId(1L);
+        series.setTotalEpisodes(10);
         series.setWatchedEpisodes(0);
         series.setStatus(WatchStatus.PLANNED);
 
-        when(mediaRepository.findById(2L)).thenReturn(Optional.of(series));
+        when(mediaRepository.findById(1L)).thenReturn(Optional.of(series));
 
-        mediaService.updateSeriesProgress(2L, 1);
+        mediaService.updateSeriesProgress(1L, -5);
 
-        assertThat(series.getWatchedEpisodes()).isEqualTo(1);
-        assertThat(series.getStatus()).isEqualTo(WatchStatus.WATCHING);
+        assertThat(series.getWatchedEpisodes()).isEqualTo(0);
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.PLANNED);
     }
 
     @Test
-    void shouldNotExceedTotalEpisodes() {
+    void markAsCompleted_ForMovie_ShouldChangeStatusOnly() {
+        Movie movie = new Movie();
+        movie.setId(1L);
+        movie.setStatus(WatchStatus.PLANNED);
+
+        when(mediaRepository.findById(1L)).thenReturn(Optional.of(movie));
+
+        mediaService.markAsCompleted(1L);
+
+        assertThat(movie.getStatus()).isEqualTo(WatchStatus.COMPLETED);
+    }
+
+    @Test
+    void markAsCompleted_ForSeries_ShouldChangeStatusAndMaxEpisodes() {
         Series series = new Series();
-        series.setId(3L);
-        series.setTotalEpisodes(5);
+        series.setId(1L);
+        series.setTotalEpisodes(12);
         series.setWatchedEpisodes(5);
-        series.setStatus(WatchStatus.COMPLETED);
+        series.setStatus(WatchStatus.WATCHING);
 
-        when(mediaRepository.findById(3L)).thenReturn(Optional.of(series));
+        when(mediaRepository.findById(1L)).thenReturn(Optional.of(series));
 
-        mediaService.updateSeriesProgress(3L, 1);
+        mediaService.markAsCompleted(1L);
 
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.COMPLETED);
+        assertThat(series.getWatchedEpisodes()).isEqualTo(12);
+    }
+
+    @Test
+    void markAsCompleted_ForSeriesWithNullTotal_ShouldChangeStatusOnly() {
+        Series series = new Series();
+        series.setId(1L);
+        series.setTotalEpisodes(null);
+        series.setWatchedEpisodes(5);
+        series.setStatus(WatchStatus.WATCHING);
+
+        when(mediaRepository.findById(1L)).thenReturn(Optional.of(series));
+
+        mediaService.markAsCompleted(1L);
+
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.COMPLETED);
         assertThat(series.getWatchedEpisodes()).isEqualTo(5);
     }
 
     @Test
-    void shouldCalculateStatisticsCorrectly() {
+    void getStatistics_WhenEmptyDatabase_ShouldReturnZeros() {
+        when(mediaRepository.findAll()).thenReturn(Collections.emptyList());
+
+        StatisticsDto stats = mediaService.getStatistics();
+
+        assertThat(stats.getTotalItems()).isZero();
+        assertThat(stats.getMovieCount()).isZero();
+        assertThat(stats.getSeriesCount()).isZero();
+        assertThat(stats.getTotalDurationMinutes()).isZero();
+        assertThat(stats.getWatchedDurationMinutes()).isZero();
+    }
+
+    @Test
+    void getStatistics_ShouldCalculateCorrectly() {
         Movie movie1 = new Movie();
         movie1.setDurationMinutes(120);
         movie1.setStatus(WatchStatus.COMPLETED);
@@ -114,11 +279,9 @@ class MediaServiceTest {
         assertThat(stats.getTotalItems()).isEqualTo(3);
         assertThat(stats.getMovieCount()).isEqualTo(2);
         assertThat(stats.getSeriesCount()).isEqualTo(1);
-
         assertThat(stats.getCompletedCount()).isEqualTo(1);
         assertThat(stats.getWatchingCount()).isEqualTo(1);
         assertThat(stats.getPlannedCount()).isEqualTo(1);
-
         assertThat(stats.getTotalDurationMinutes()).isEqualTo(710);
         assertThat(stats.getWatchedDurationMinutes()).isEqualTo(370);
     }
