@@ -44,6 +44,22 @@ class MediaServiceTest {
     }
 
     @Test
+    void shouldChangeStatusToWatching_WhenProgressDecreasedBelowTotal() {
+        Series series = new Series();
+        series.setId(1L);
+        series.setTotalEpisodes(10);
+        series.setWatchedEpisodes(10);
+        series.setStatus(WatchStatus.COMPLETED);
+
+        when(mediaRepository.findById(1L)).thenReturn(Optional.of(series));
+
+        mediaService.updateSeriesProgress(1L, -5);
+
+        assertThat(series.getWatchedEpisodes()).isEqualTo(5);
+        assertThat(series.getStatus()).isEqualTo(WatchStatus.WATCHING);
+    }
+
+    @Test
     void shouldChangeStatusToWatching_WhenFirstEpisodeWatched() {
         Series series = new Series();
         series.setId(2L);

@@ -55,6 +55,8 @@ public class MediaService {
                 series.setStatus(WatchStatus.WATCHING);
             } else if (watched == 0 && series.getStatus() == WatchStatus.WATCHING) {
                 series.setStatus(WatchStatus.PLANNED);
+            } else if (series.getStatus() == WatchStatus.COMPLETED && watched < total) {
+                series.setStatus(WatchStatus.WATCHING);
             }
         }
         mediaRepository.save(item);
