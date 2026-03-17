@@ -31,11 +31,16 @@ public class MediaService {
 
     private Sort createSort(String sortParam) {
         SortField field = SortField.fromString(sortParam);
-        return switch (field) {
+        Sort primarySort = switch (field) {
             case ID -> Sort.by(Sort.Direction.ASC, field.getEntityFieldName());
             case YEAR, DURATION -> Sort.by(Sort.Direction.DESC, field.getEntityFieldName());
             default -> Sort.by(field.getEntityFieldName());
         };
+
+        if (field != SortField.ID) {
+            return primarySort.and(Sort.by(Sort.Direction.ASC, "id"));
+        }
+        return primarySort;
     }
 
     public MediaItem findById(Long id) {
