@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.tracker.mediatracker.model.MediaItem;
 import com.tracker.mediatracker.repo.MediaItemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +25,7 @@ public class BackupService {
             .enable(SerializationFeature.INDENT_OUTPUT);
 
     public byte[] exportData() throws IOException {
-        List<MediaItem> allItems = repository.findAll();
+        List<MediaItem> allItems = repository.findAll(Sort.by(Sort.Direction.ASC, "id"));
 
         return objectMapper
                 .writerFor(new TypeReference<List<MediaItem>>() {
