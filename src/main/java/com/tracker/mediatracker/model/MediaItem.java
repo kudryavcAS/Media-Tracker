@@ -37,14 +37,14 @@ public abstract class MediaItem {
     @Column(name = "content_type", insertable = false, updatable = false)
     private String contentType;
 
-    @NotBlank(message = "Название не может быть пустым")
+    @NotBlank(message = "Title cannot be empty")
     private String title;
 
-    @NotNull(message = "Год выпуска обязателен")
-    @Min(value = 1888, message = "Год должен быть не раньше 1888")
+    @NotNull(message = "Release year is required")
+    @Min(value = 1888, message = "Year must be no earlier than 1888")
     private Integer releaseYear;
 
-    @Min(value = 1, message = "Длительность должна быть больше 0")
+    @Min(value = 1, message = "Duration must be greater than 0")
     private Integer durationMinutes;
 
     private String directors;
