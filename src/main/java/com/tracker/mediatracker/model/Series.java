@@ -14,10 +14,10 @@ import lombok.EqualsAndHashCode;
 @DiscriminatorValue("SERIES")
 public class Series extends MediaItem {
 
-    @Min(value = 1, message = "Количество эпизодов должно быть минимум 1")
+    @Min(value = 1, message = "Total episodes must be at least 1")
     private Integer totalEpisodes;
 
-    @Min(value = 0, message = "Количество просмотренных не может быть отрицательным")
+    @Min(value = 0, message = "Watched episodes cannot be negative")
     private Integer watchedEpisodes = 0;
 
     @Enumerated(EnumType.STRING)
