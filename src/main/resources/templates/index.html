@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Моё зриво')}">
-    <title>Моё зриво</title>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Media Tracker')}">
+    <title>Media Tracker</title>
 </head>
 <body class="container mt-4">
 
@@ -24,12 +24,12 @@
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 style="font-weight: bold;">Моё зриво</h1>
+    <h1 style="font-weight: bold;">Media Tracker</h1>
 
     <div class="d-flex gap-2">
-        <a href="/add/movie" class="btn btn-primary">+ Фильм</a>
-        <a href="/add/series" class="btn btn-success">+ Сериал</a>
-        <a href="/settings" class="btn btn-secondary">⚙️ Настройки</a>
+        <a href="/add/movie" class="btn btn-primary">+ Movie</a>
+        <a href="/add/series" class="btn btn-success">+ Series</a>
+        <a href="/settings" class="btn btn-secondary">⚙️ Settings</a>
     </div>
 </div>
 
@@ -39,29 +39,28 @@
         <ul class="nav nav-pills">
             <li class="nav-item">
                 <a class="nav-link" th:classappend="${currentType == 'ALL' ? 'active' : ''}"
-                   th:href="@{/(type='ALL', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Всё</a>
+                   th:href="@{/(type='ALL', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">All</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" th:classappend="${currentType == 'MOVIE' ? 'active' : ''}"
-                   th:href="@{/(type='MOVIE', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Фильмы</a>
+                   th:href="@{/(type='MOVIE', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Movies</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" th:classappend="${currentType == 'SERIES' ? 'active' : ''}"
-                   th:href="@{/(type='SERIES', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Все
-                    сериалы</a>
+                   th:href="@{/(type='SERIES', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">All Series</a>
             </li>
             <li class="nav-item ms-2 border-start ps-2"></li>
             <li class="nav-item">
                 <a class="nav-link" th:classappend="${currentType == 'ANIME' ? 'active' : ''}"
-                   th:href="@{/(type='ANIME', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Аниме</a>
+                   th:href="@{/(type='ANIME', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Anime</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" th:classappend="${currentType == 'ANIMATION' ? 'active' : ''}"
-                   th:href="@{/(type='ANIMATION', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Мульт</a>
+                   th:href="@{/(type='ANIMATION', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Animation</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" th:classappend="${currentType == 'LIVE_ACTION' ? 'active' : ''}"
-                   th:href="@{/(type='LIVE_ACTION', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Реалы</a>
+                   th:href="@{/(type='LIVE_ACTION', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Live Action</a>
             </li>
         </ul>
 
@@ -73,7 +72,7 @@
 
                 <div class="input-group">
                     <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Найти..." th:value="${currentQuery}" aria-label="Поиск">
+                    <input type="text" name="q" class="form-control" placeholder="Search..." th:value="${currentQuery}" aria-label="Search">
                 </div>
             </form>
 
@@ -82,9 +81,9 @@
                 <input type="hidden" name="sort" th:value="${currentSort}">
                 <input type="hidden" name="q" th:value="${currentQuery}">
 
-                <select name="status" class="form-select" style="width: 150px;" aria-label="Фильтр по статусу"
+                <select name="status" class="form-select" style="width: 150px;" aria-label="Filter by status"
                         onchange="document.getElementById('statusForm').submit()">
-                    <option value="ALL" th:selected="${currentStatus == 'ALL'}">Любой статус</option>
+                    <option value="ALL" th:selected="${currentStatus == 'ALL'}">Any status</option>
                     <option th:each="st : ${T(com.tracker.mediatracker.model.WatchStatus).values()}"
                             th:value="${st.name()}"
                             th:text="${st.title}"
@@ -94,7 +93,7 @@
             </form>
 
             <div th:if="${currentType != 'ALL' or currentStatus != 'ALL' or currentSort != null or (currentQuery != null and !currentQuery.isEmpty())}">
-                <a href="/" class="btn btn-outline-danger" title="Сбросить все фильтры">✕</a>
+                <a href="/" class="btn btn-outline-danger" title="Reset all filters">✕</a>
             </div>
         </div>
     </div>
@@ -105,27 +104,26 @@
     <tr>
         <th class="ps-3">
             <a class="sort-link" th:classappend="${currentSort == 'type' ? 'active-sort' : ''}"
-               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='type', q=${currentQuery})}">Тип</a>
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='type', q=${currentQuery})}">Type</a>
         </th>
         <th>
             <a class="sort-link" th:classappend="${currentSort == 'title' ? 'active-sort' : ''}"
-               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='title', q=${currentQuery})}">Название</a>
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='title', q=${currentQuery})}">Title</a>
         </th>
         <th>
             <a class="sort-link" th:classappend="${currentSort == 'year' ? 'active-sort' : ''}"
-               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='year', q=${currentQuery})}">Год</a>
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='year', q=${currentQuery})}">Year</a>
         </th>
         <th>
             <a class="sort-link" th:classappend="${currentSort == 'director' ? 'active-sort' : ''}"
-               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='director', q=${currentQuery})}">Режиссёр</a>
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='director', q=${currentQuery})}">Director</a>
         </th>
         <th>
             <a class="sort-link" th:classappend="${currentSort == 'duration' ? 'active-sort' : ''}"
-               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='duration', q=${currentQuery})}">Общее
-                время</a>
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='duration', q=${currentQuery})}">Duration</a>
         </th>
-        <th>Статус</th>
-        <th class="pe-3 text-end">Действия</th>
+        <th>Status</th>
+        <th class="pe-3 text-end">Actions</th>
     </tr>
     </thead>
 
@@ -138,7 +136,7 @@
 
         <td class="ps-3">
             <span th:if="${item instanceof T(com.tracker.mediatracker.model.Movie)}"
-                  class="badge bg-primary">Фильм</span>
+                  class="badge bg-primary">Movie</span>
             <span th:if="${item instanceof T(com.tracker.mediatracker.model.Series)}"
                   th:object="${item}"
                   class="badge bg-success"
@@ -159,7 +157,7 @@
         <td th:text="${item.releaseYear}"></td>
         <td><span class="searchable" th:text="${item.directors}"></span></td>
         <td>
-            <span th:text="${item.durationMinutes}"></span> мин.
+            <span th:text="${item.durationMinutes}"></span> min.
         </td>
 
         <td>
@@ -171,12 +169,12 @@
         <td class="pe-3" onclick="event.stopPropagation()">
             <div class="d-flex justify-content-end gap-2">
                 <form th:if="${item.status.name() != 'COMPLETED'}" th:action="@{'/item/' + ${item.id} + '/complete'}" method="post" class="m-0 ajax-form" th:data-id="${item.id}">
-                    <button class="btn btn-sm btn-outline-secondary border-0" title="Отметить просмотренным">
+                    <button class="btn btn-sm btn-outline-secondary border-0" title="Mark as completed">
                         <i class="bi bi-check-circle fs-5"></i>
                     </button>
                 </form>
 
-                <a th:href="@{'/edit/' + ${item.id}}" class="btn btn-sm btn-outline-primary border-0" title="Редактировать">
+                <a th:href="@{'/edit/' + ${item.id}}" class="btn btn-sm btn-outline-primary border-0" title="Edit">
                     <i class="bi bi-pencil-fill fs-5"></i>
                 </a>
             </div>
@@ -190,7 +188,7 @@
             <div class="p-3 border-start border-4 border-success">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h5>Прогресс просмотра</h5>
+                        <h5>Watch Progress</h5>
                         <div class="d-flex align-items-center gap-3">
                             <form th:action="@{'/series/' + ${item.id} + '/dec'}" method="post" class="m-0 ajax-form" th:data-id="${item.id}">
                                 <button class="btn btn-outline-danger btn-sm fw-bold" style="width: 30px;">-</button>
@@ -218,7 +216,7 @@
 </table>
 
 <div th:if="${items.isEmpty()}" class="text-center mt-5 text-muted">
-    <h4>Список пуст или ничего не найдено 🦕</h4>
+    <h4>The list is empty or nothing was found 🦕</h4>
 </div>
 
 <script th:inline="javascript">
