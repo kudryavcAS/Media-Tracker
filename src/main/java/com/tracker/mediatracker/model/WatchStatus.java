@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public enum WatchStatus {
-    PLANNED("Буду смотреть"),
-    WATCHING("Смотрю"),
-    COMPLETED("Просмотрено"),
-    DROPPED("Брошено");
+    PLANNED("Planned"),
+    WATCHING("Watching"),
+    COMPLETED("Completed"),
+    DROPPED("Dropped");
 
     private final String title;
 
