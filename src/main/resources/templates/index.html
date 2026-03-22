@@ -118,9 +118,9 @@
             <a class="sort-link" th:classappend="${currentSort == 'director' ? 'active-sort' : ''}"
                th:href="@{/(type=${currentType}, status=${currentStatus}, sort='director', q=${currentQuery})}">Director</a>
         </th>
-        <th>
+        <th class="text-nowrap">
             <a class="sort-link" th:classappend="${currentSort == 'duration' ? 'active-sort' : ''}"
-               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='duration', q=${currentQuery})}">Duration</a>
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='duration', q=${currentQuery})}">Duration (min)</a>
         </th>
         <th>Status</th>
         <th class="pe-3 text-end">Actions</th>
@@ -156,9 +156,7 @@
 
         <td th:text="${item.releaseYear}"></td>
         <td><span class="searchable" th:text="${item.directors}"></span></td>
-        <td>
-            <span th:text="${item.durationMinutes}"></span> min.
-        </td>
+        <td th:text="${item.durationMinutes}"></td>
 
         <td>
             <span class="badge"
