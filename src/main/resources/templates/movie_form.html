@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Фильм')}">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Movie')}">
 </head>
 <body class="container mt-5">
 <div class="card shadow-sm bg-white">
     <div class="card-header bg-primary text-white">
-        <h2 class="mb-0" th:text="${movie.id == null ? 'Добавить новый фильм' : 'Редактировать фильм'}"></h2>
+        <h2 class="mb-0" th:text="${movie.id == null ? 'Add New Movie' : 'Edit Movie'}"></h2>
     </div>
     <div class="card-body">
         <form th:action="@{/save/movie}" th:object="${movie}" method="post">
@@ -13,28 +13,28 @@
             <input type="hidden" th:field="*{id}">
 
             <div class="mb-3">
-                <label class="form-label fw-bold">Название</label>
+                <label class="form-label fw-bold">Title</label>
                 <input type="text" class="form-control" th:field="*{title}" required>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Режиссер(ы)</label>
+                <label class="form-label">Director(s)</label>
                 <input type="text" class="form-control" th:field="*{directors}">
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Год выхода</label>
+                    <label class="form-label">Release Year</label>
                     <input type="number" class="form-control" th:field="*{releaseYear}" min="1900" max="2100">
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Длительность (минут)</label>
+                    <label class="form-label">Duration (minutes)</label>
                     <input type="number" class="form-control" th:field="*{durationMinutes}">
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Статус</label>
+                <label class="form-label">Status</label>
                 <select class="form-select" th:field="*{status}">
                     <option th:each="st : ${T(com.tracker.mediatracker.model.WatchStatus).values()}"
                             th:value="${st}" th:text="${st.title}"></option>
@@ -43,12 +43,12 @@
 
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <div>
-                    <a href="/" class="btn btn-secondary">Отмена</a>
+                    <a href="/" class="btn btn-secondary">Cancel</a>
                     <a th:if="${movie.id != null}" th:href="@{'/delete/' + ${movie.id}}"
                        class="btn btn-danger ms-2"
-                       onclick="return confirm('Вы уверены, что хотите безвозвратно удалить эту запись?')">Удалить</a>
+                       onclick="return confirm('Are you sure you want to permanently delete this record?')">Delete</a>
                 </div>
-                <button type="submit" class="btn btn-primary px-4">Сохранить</button>
+                <button type="submit" class="btn btn-primary px-4">Save</button>
             </div>
         </form>
     </div>

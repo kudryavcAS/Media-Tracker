@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Настройки - MediaTracker</title>
+    <title>Settings - MediaTracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; padding: 20px; }
@@ -20,52 +20,52 @@
 
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="header-title">⚙️ Настройки</h1>
-        <a href="/" class="btn btn-outline-secondary">← На главную</a>
+        <h1 class="header-title">⚙️ Settings</h1>
+        <a href="/" class="btn btn-outline-secondary">← Back to Home</a>
     </div>
 
     <div class="card-custom">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h4 class="mb-1">Статистика</h4>
-                <p class="text-muted mb-0">Подробная сводка по времени просмотра и вашей библиотеке.</p>
+                <h4 class="mb-1">Statistics</h4>
+                <p class="text-muted mb-0">Detailed summary of your watch time and library.</p>
             </div>
             <a href="/stats" class="btn btn-info text-white fw-bold px-4 py-2">
-                📊 Открыть статистику
+                📊 Open Statistics
             </a>
         </div>
     </div>
 
     <div class="card-custom">
-        <h4 class="mb-3">Бэкап данных</h4>
-        <p class="text-muted">Вы можете сохранить всю базу данных в JSON файл или восстановить её.</p>
+        <h4 class="mb-3">Data Backup</h4>
+        <p class="text-muted">You can save the entire database to a JSON file or restore it.</p>
 
         <div class="row">
             <div class="col-md-5 border-end">
-                <h5>Экспорт</h5>
-                <p class="small text-muted">Скачать текущую базу данных в файл.</p>
+                <h5>Export</h5>
+                <p class="small text-muted">Download the current database to a file.</p>
                 <a href="/backup/export" class="btn btn-primary w-100">
-                    💾 Скачать базу (JSON)
+                    💾 Download Database (JSON)
                 </a>
             </div>
 
             <div class="col-md-7 ps-md-4">
-                <h5>Импорт</h5>
-                <p class="small text-muted">Загрузить данные из файла.</p>
+                <h5>Import</h5>
+                <p class="small text-muted">Load data from a file.</p>
 
                 <form method="POST" action="/backup/import" enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Режим импорта:</label>
+                        <label class="form-label fw-bold">Import Mode:</label>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="mode" id="modeAppend" value="append" checked>
                             <label class="form-check-label" for="modeAppend">
-                                Добавить к существующим (Append)
+                                Add to existing (Append)
                             </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="mode" id="modeOverwrite" value="overwrite">
                             <label class="form-check-label text-danger" for="modeOverwrite">
-                                Удалить старые и записать новые (Полная замена)
+                                Delete old and write new (Overwrite)
                             </label>
                         </div>
                     </div>
@@ -73,7 +73,7 @@
                     <div class="input-group">
                         <input type="file" name="file" accept=".json" class="form-control" required>
                         <button type="submit" class="btn btn-warning">
-                            📂 Загрузить
+                            📂 Upload
                         </button>
                     </div>
                 </form>

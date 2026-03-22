@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Сериал')}">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Series')}">
 </head>
 <body class="container mt-5">
 <div class="card shadow-sm bg-white">
     <div class="card-header bg-success text-white">
-        <h2 class="mb-0" th:text="${series.id == null ? 'Добавить новый сериал' : 'Редактировать сериал'}"></h2>
+        <h2 class="mb-0" th:text="${series.id == null ? 'Add New Series' : 'Edit Series'}"></h2>
     </div>
     <div class="card-body">
         <form th:action="@{/save/series}" th:object="${series}" method="post">
@@ -13,47 +13,47 @@
             <input type="hidden" th:field="*{id}">
 
             <div class="mb-3">
-                <label class="form-label fw-bold">Название</label>
+                <label class="form-label fw-bold">Title</label>
                 <input type="text" class="form-control" th:field="*{title}" required>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Режиссер(ы)</label>
+                <label class="form-label">Director(s)</label>
                 <input type="text" class="form-control" th:field="*{directors}">
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Тип</label>
+                    <label class="form-label">Series Type</label>
                     <select class="form-select" th:field="*{seriesType}">
                         <option th:each="type : ${T(com.tracker.mediatracker.model.SeriesType).values()}"
                                 th:value="${type}" th:text="${type.title}"></option>
                     </select>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Количество серий (Всего)</label>
+                    <label class="form-label">Total Episodes</label>
                     <input type="number" class="form-control" th:field="*{totalEpisodes}">
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Год выхода</label>
+                    <label class="form-label">Release Year</label>
                     <input type="number" class="form-control" th:field="*{releaseYear}" min="1900" max="2100">
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Просмотрено серий (уже)</label>
+                    <label class="form-label fw-bold">Episodes Watched</label>
                     <input type="number" class="form-control" th:field="*{watchedEpisodes}" placeholder="0">
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Общая длительность (минут)</label>
+                <label class="form-label">Total Duration (minutes)</label>
                 <input type="number" class="form-control" th:field="*{durationMinutes}">
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Статус</label>
+                <label class="form-label">Status</label>
                 <select class="form-select" th:field="*{status}">
                     <option th:each="st : ${T(com.tracker.mediatracker.model.WatchStatus).values()}"
                             th:value="${st}" th:text="${st.title}"></option>
@@ -62,12 +62,12 @@
 
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <div>
-                    <a href="/" class="btn btn-secondary">Отмена</a>
+                    <a href="/" class="btn btn-secondary">Cancel</a>
                     <a th:if="${series.id != null}" th:href="@{'/delete/' + ${series.id}}"
                        class="btn btn-danger ms-2"
-                       onclick="return confirm('Вы уверены, что хотите безвозвратно удалить эту запись?')">Удалить</a>
+                       onclick="return confirm('Are you sure you want to permanently delete this record?')">Delete</a>
                 </div>
-                <button type="submit" class="btn btn-success px-4">Сохранить</button>
+                <button type="submit" class="btn btn-success px-4">Save</button>
             </div>
         </form>
     </div>

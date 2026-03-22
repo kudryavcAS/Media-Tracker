@@ -1,38 +1,38 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Статистика')}">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Statistics')}">
 </head>
 <body class="container mt-4">
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 style="font-weight: bold;">📊 Статистика</h1>
-    <a href="/settings" class="btn btn-outline-secondary">← Назад</a>
+    <h1 style="font-weight: bold;">📊 Statistics</h1>
+    <a href="/settings" class="btn btn-outline-secondary">← Back</a>
 </div>
 
 <div class="row mb-4">
     <div class="col-md-6">
         <div class="card bg-success text-white shadow-sm h-100">
             <div class="card-body text-center d-flex flex-column justify-content-center">
-                <h5 class="card-title">Чистое время просмотра</h5>
+                <h5 class="card-title">Net Watch Time</h5>
                 <h2 class="display-5 fw-bold mb-1" th:text="${stats.formatTime(stats.watchedDurationMinutes)}"></h2>
                 <div class="fs-5 mb-2" style="opacity: 0.85;">
                     <span th:text="${stats.formatMinutes(stats.watchedDurationMinutes)}"></span> &bull;
                     <span th:text="${stats.formatHours(stats.watchedDurationMinutes)}"></span>
                 </div>
-                <p class="mb-0 text-white-50 small">Учитываются только просмотренные записи и просмотренные серии</p>
+                <p class="mb-0 text-white-50 small">Only completed items and watched episodes are counted</p>
             </div>
         </div>
     </div>
     <div class="col-md-6">
         <div class="card bg-secondary text-white shadow-sm h-100">
             <div class="card-body text-center d-flex flex-column justify-content-center">
-                <h5 class="card-title">Общее время библиотеки</h5>
+                <h5 class="card-title">Total Library Time</h5>
                 <h2 class="display-5 fw-bold mb-1" th:text="${stats.formatTime(stats.totalDurationMinutes)}"></h2>
                 <div class="fs-5 mb-2" style="opacity: 0.85;">
                     <span th:text="${stats.formatMinutes(stats.totalDurationMinutes)}"></span> &bull;
                     <span th:text="${stats.formatHours(stats.totalDurationMinutes)}"></span>
                 </div>
-                <p class="mb-0 text-white-50 small">Сколько времени нужно, чтобы посмотреть всё из списка</p>
+                <p class="mb-0 text-white-50 small">Time required to watch everything in the list</p>
             </div>
         </div>
     </div>
@@ -42,22 +42,22 @@
     <div class="col-md-4">
         <div class="card shadow-sm h-100 border-start border-4 border-success">
             <div class="card-body">
-                <h5 class="text-success text-center fw-bold mb-4">Распределение времени</h5>
+                <h5 class="text-success text-center fw-bold mb-4">Time Distribution</h5>
                 <div class="text-start px-2">
                     <p class="mb-3 d-flex justify-content-between border-bottom pb-2">
-                        <span class="fw-bold">Фильмы</span>
+                        <span class="fw-bold">Movies</span>
                         <span class="text-muted" th:text="${stats.formatTime(stats.movieWatchedMinutes)} + ' (' + ${stats.formatHours(stats.movieWatchedMinutes)} + ')'"></span>
                     </p>
                     <p class="mb-3 d-flex justify-content-between border-bottom pb-2">
-                        <span class="fw-bold">Реалы</span>
+                        <span class="fw-bold">Live Action</span>
                         <span class="text-muted" th:text="${stats.formatTime(stats.liveActionWatchedMinutes)} + ' (' + ${stats.formatHours(stats.liveActionWatchedMinutes)} + ')'"></span>
                     </p>
                     <p class="mb-3 d-flex justify-content-between border-bottom pb-2">
-                        <span class="fw-bold">Аниме</span>
+                        <span class="fw-bold">Anime</span>
                         <span class="text-muted" th:text="${stats.formatTime(stats.animeWatchedMinutes)} + ' (' + ${stats.formatHours(stats.animeWatchedMinutes)} + ')'"></span>
                     </p>
                     <p class="mb-0 d-flex justify-content-between">
-                        <span class="fw-bold">Мультфильмы</span>
+                        <span class="fw-bold">Animation</span>
                         <span class="text-muted" th:text="${stats.formatTime(stats.animationWatchedMinutes)} + ' (' + ${stats.formatHours(stats.animationWatchedMinutes)} + ')'"></span>
                     </p>
                 </div>
@@ -68,16 +68,16 @@
     <div class="col-md-4">
         <div class="card shadow-sm text-center h-100">
             <div class="card-body d-flex flex-column justify-content-center">
-                <h5 class="text-muted mb-3">Всего записей</h5>
+                <h5 class="text-muted mb-3">Total Items</h5>
                 <h1 class="display-4 fw-bold text-dark mb-4" th:text="${stats.totalItems}"></h1>
                 <div class="d-flex justify-content-around text-muted w-100 px-2">
                     <div class="p-2 border rounded bg-light w-100 me-2">
                         <span class="fs-4 fw-bold text-primary" th:text="${stats.movieCount}"></span><br>
-                        <small>Фильмов</small>
+                        <small>Movies</small>
                     </div>
                     <div class="p-2 border rounded bg-light w-100 ms-2">
                         <span class="fs-4 fw-bold text-success" th:text="${stats.seriesCount}"></span><br>
-                        <small>Сериалов</small>
+                        <small>Series</small>
                     </div>
                 </div>
             </div>
@@ -87,22 +87,22 @@
     <div class="col-md-4">
         <div class="card shadow-sm h-100">
             <div class="card-body">
-                <h5 class="text-muted text-center mb-4">Статусы</h5>
+                <h5 class="text-muted text-center mb-4">Statuses</h5>
                 <div class="d-flex flex-column gap-3 px-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge bg-secondary fs-6" style="width: 130px;">Просмотрено</span>
+                        <span class="badge bg-secondary fs-6" style="width: 130px;">Completed</span>
                         <span class="fw-bold fs-5" th:text="${stats.completedCount}"></span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge bg-warning text-dark fs-6" style="width: 130px;">Смотрю</span>
+                        <span class="badge bg-warning text-dark fs-6" style="width: 130px;">Watching</span>
                         <span class="fw-bold fs-5" th:text="${stats.watchingCount}"></span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge bg-info text-dark fs-6" style="width: 130px;">Буду смотреть</span>
+                        <span class="badge bg-info text-dark fs-6" style="width: 130px;">Planned</span>
                         <span class="fw-bold fs-5" th:text="${stats.plannedCount}"></span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge bg-danger fs-6" style="width: 130px;">Брошено</span>
+                        <span class="badge bg-danger fs-6" style="width: 130px;">Dropped</span>
                         <span class="fw-bold fs-5" th:text="${stats.droppedCount}"></span>
                     </div>
                 </div>
