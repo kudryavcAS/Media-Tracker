@@ -1,55 +1,55 @@
 # MediaTracker
 
-**MediaTracker** — это персональное веб-приложение для отслеживания фильмов и сериалов.
-Позволяет вести список "что посмотреть", отмечать прогресс просмотра сериалов, сортировать и фильтровать контент. Данные хранятся локально (SQLite), что обеспечивает приватность и независимость от интернета.
+**MediaTracker** is a personal web application for tracking movies and series.
+It allows you to maintain a "plan to watch" list, track your series viewing progress, and sort/filter content. Data is stored locally in PostgreSQL, ensuring privacy and robust data management without relying on external cloud services.
 
-## Возможности
+## Features
 
-*   **Разделение контента:** Фильмы, Сериалы, Аниме, Мультфильмы.
-*   **Умный поиск:** Мгновенный поиск по названию и режиссеру с **подсветкой** найденного текста.
-*   **Фильтрация и Сортировка:**
-    *   Фильтры по типу (например, только Аниме) и статусу (Смотрю / Забросил / В планах).
-    *   Сортировка по году, длительности, названию и дате добавления.
-*   **Трекинг серий:** Удобные кнопки `+` / `-` для изменения количества просмотренных серий прямо в списке.
-*   **Автоматизация:** Статус автоматически меняется на **"Просмотрено"**, когда количество серий достигает максимума.
-*   **Технологии:** Современный стек на Java 21.
+*   **Content Separation:** Movies, Series, Anime, Animation, Live Action.
+*   **Smart Search:** Instant search by title and director with **highlighting** of the found text.
+*   **Filtering and Sorting:**
+    *   Filter by type (e.g., Anime only) and status (Watching / Dropped / Planned / Completed).
+    *   Sort by Year, Duration, Title, Type, and **Status**.
+*   **Series Tracking:** Convenient `+` / `-` buttons to change the number of watched episodes directly in the list.
+*   **Automation:** Status automatically changes to **"Completed"** when the number of episodes reaches the maximum.
+*   **Technology:** Modern stack built on Java 21.
 
 ---
 
-## Технологический стек
+## Tech Stack
 
 *   **Backend:** Java 21, Spring Boot 3
-*   **Database:** SQLite (локальный файл, не требует установки сервера БД)
-*   **ORM:** Spring Data JPA + Hibernate (с использованием Specifications для оптимизации поиска)
+*   **Database:** PostgreSQL 16
+*   **ORM:** Spring Data JPA + Hibernate (using Specifications for dynamic search optimization)
 *   **Frontend:** Thymeleaf (Server-Side Rendering), Bootstrap 5
 *   **Deployment:** Docker & Docker Compose
 
 ---
 
-## Как запустить
+## How to Run
 
-### Вариант 1: Через Docker (Рекомендуется)
-Достаточно иметь Docker.
+### Option 1: Using Docker (Recommended)
+You only need Docker installed.
 
-1.  Скачайте проект:
+1.  Clone the project:
     ```bash
     git clone https://github.com/kudryavcAS/Media-Tracker.git
     cd Media-Tracker
     ```
-2.  Запустите приложение одной командой:
+2.  Start the application with one command:
     ```bash
-    docker-compose up
+    docker-compose up -d
     ```
-    *(При первом запуске сборка может занять пару минут)*
+    *(The first launch might take a couple of minutes to build the image)*
 
-3.  Откройте в браузере: [http://localhost:8080](http://localhost:8080)
+3.  Open in your browser:[http://localhost:8080](http://localhost:8080)
 
-> **Важно:** База данных сохраняется в папке `docker_data` внутри проекта, так что при перезапуске данные не пропадут.
+> **Important:** The database is saved in the `./test_db_data` folder inside the project, so data will not be lost upon restart.
 
-### Вариант 2: Локально (Java)
-Требуется установленный JDK 21.
+### Option 2: Locally (Java)
+Requires JDK 21 installed and a running PostgreSQL instance.
 
-1.  Соберите проект:
+1.  Build the project:
     ```bash
     # Windows
     .\mvnw clean package
@@ -57,10 +57,8 @@
     # Linux / macOS
     ./mvnw clean package
     ```
-2.  Запустите JAR файл:
-    *   **Windows:** Запустите файл `run.bat` (если он создан).
-    *   **Терминал:**
-        ```bash
-        java -jar target/mediatracker-0.0.1-SNAPSHOT.jar
-        ```
+2.  Run the JAR file:
+    ```bash
+    java -jar target/mediatracker-0.0.1-SNAPSHOT.jar
+    ```
 ---

@@ -15,6 +15,7 @@ target/
 
 ### IntelliJ IDEA ###
 
+export_for_ai.py
 ai_context.txt
 target/
 !.mvn/wrapper/maven-wrapper.jar
@@ -53,3 +54,4 @@ media.db
 docker_data/
 
 /test_db_data/
+
