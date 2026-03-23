@@ -1,5 +1,6 @@
 package com.tracker.mediatracker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.hibernate.annotations.Formula;
 
 @Data
 @Entity
@@ -51,4 +53,16 @@ public abstract class MediaItem {
 
     @Enumerated(EnumType.STRING)
     private WatchStatus status = WatchStatus.PLANNED;
+
+    @JsonIgnore
+    @Formula("(CASE WHEN status = 'PLANNED' THEN 1 WHEN status = 'WATCHING' THEN 2 WHEN status = 'COMPLETED' THEN 3 ELSE 4 END)")
+    private Integer statusOrder;
+
+    @JsonIgnore
+    @Formula("(CASE WHEN content_type = 'MOVIE' THEN 1 WHEN series_type = 'LIVE_ACTION' THEN 2 WHEN series_type = 'ANIME' THEN 3 WHEN series_type = 'ANIMATION' THEN 4 ELSE 5 END)")
+    private Integer typeOrder;
+
+    @JsonIgnore
+    @Formula("(CASE WHEN content_type = 'MOVIE' THEN (CASE WHEN status = 'COMPLETED' THEN 100 ELSE 0 END) WHEN total_episodes IS NOT NULL AND total_episodes > 0 THEN (COALESCE(watched_episodes, 0) * 100 / total_episodes) ELSE 0 END)")
+    private Integer progress;
 }

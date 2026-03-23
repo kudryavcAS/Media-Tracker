@@ -107,8 +107,11 @@
                th:href="@{/(type=${currentType}, status=${currentStatus}, sort='type', q=${currentQuery})}">Type</a>
         </th>
         <th>
-            <a class="sort-link" th:classappend="${currentSort == 'title' ? 'active-sort' : ''}"
+            <a class="sort-link d-inline" th:classappend="${currentSort == 'title' ? 'active-sort' : ''}"
                th:href="@{/(type=${currentType}, status=${currentStatus}, sort='title', q=${currentQuery})}">Title</a>
+            <span class="text-muted mx-1">/</span>
+            <a class="sort-link d-inline fw-normal" style="font-size: 0.9em;" th:classappend="${currentSort == 'progress' ? 'active-sort fw-bold' : ''}"
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='progress', q=${currentQuery})}">Progress</a>
         </th>
         <th>
             <a class="sort-link" th:classappend="${currentSort == 'year' ? 'active-sort' : ''}"
@@ -122,7 +125,10 @@
             <a class="sort-link" th:classappend="${currentSort == 'duration' ? 'active-sort' : ''}"
                th:href="@{/(type=${currentType}, status=${currentStatus}, sort='duration', q=${currentQuery})}">Duration (min)</a>
         </th>
-        <th>Status</th>
+        <th>
+            <a class="sort-link" th:classappend="${currentSort == 'status' ? 'active-sort' : ''}"
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='status', q=${currentQuery})}">Status</a>
+        </th>
         <th class="pe-3 text-end">Actions</th>
     </tr>
     </thead>
