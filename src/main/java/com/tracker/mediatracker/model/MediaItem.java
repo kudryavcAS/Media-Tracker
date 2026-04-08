@@ -65,4 +65,8 @@ public abstract class MediaItem {
     @JsonIgnore
     @Formula("(CASE WHEN content_type = 'MOVIE' THEN (CASE WHEN status = 'COMPLETED' THEN 100 ELSE 0 END) WHEN total_episodes IS NOT NULL AND total_episodes > 0 THEN (COALESCE(watched_episodes, 0) * 100 / total_episodes) ELSE 0 END)")
     private Integer progress;
+
+    public void markAsCompleted() {
+        this.status = WatchStatus.COMPLETED;
+    }
 }

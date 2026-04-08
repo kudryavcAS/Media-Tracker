@@ -2,10 +2,8 @@ package com.tracker.mediatracker.service;
 
 import com.tracker.mediatracker.dto.StatisticsDto;
 import com.tracker.mediatracker.model.MediaItem;
-import com.tracker.mediatracker.model.Movie;
 import com.tracker.mediatracker.model.Series;
 import com.tracker.mediatracker.model.SortField;
-import com.tracker.mediatracker.model.WatchStatus;
 import com.tracker.mediatracker.repo.MediaItemRepository;
 import com.tracker.mediatracker.repo.MediaSpecifications;
 import com.tracker.mediatracker.repo.StatsProjection;
@@ -50,19 +48,7 @@ public class MediaService {
     @Transactional
     public void save(MediaItem item) {
         if (item instanceof Series series) {
-            int watched = series.getWatchedEpisodes() == null ? 0 : series.getWatchedEpisodes();
-            int total = series.getTotalEpisodes() == null ? 0 : series.getTotalEpisodes();
-
-            if (total > 0 && watched >= total) {
-                series.setWatchedEpisodes(total);
-                series.setStatus(WatchStatus.COMPLETED);
-            } else if (watched > 0 && series.getStatus() == WatchStatus.PLANNED) {
-                series.setStatus(WatchStatus.WATCHING);
-            } else if (watched == 0 && series.getStatus() == WatchStatus.WATCHING) {
-                series.setStatus(WatchStatus.PLANNED);
-            } else if (series.getStatus() == WatchStatus.COMPLETED && watched < total) {
-                series.setStatus(WatchStatus.WATCHING);
-            }
+            series.syncState();
         }
         mediaRepository.save(item);
     }
@@ -78,33 +64,15 @@ public class MediaService {
                 .filter(Series.class::isInstance)
                 .map(Series.class::cast)
                 .ifPresent(series -> {
-                    int current = series.getWatchedEpisodes() == null ? 0 : series.getWatchedEpisodes();
-                    int total = series.getTotalEpisodes() == null ? 0 : series.getTotalEpisodes();
-                    int newVal = Math.max(0, current + change);
-
-                    if (total > 0 && newVal >= total) {
-                        newVal = total;
-                    }
-
-                    series.setWatchedEpisodes(newVal);
-
-                    if (series.getStatus() == WatchStatus.COMPLETED && newVal < total) {
-                        series.setStatus(WatchStatus.WATCHING);
-                    }
-
-                    save(series);
+                    series.updateProgress(change);
+                    mediaRepository.save(series);
                 });
     }
 
     @Transactional
     public void markAsCompleted(Long id) {
         mediaRepository.findById(id).ifPresent(item -> {
-            item.setStatus(WatchStatus.COMPLETED);
-            if (item instanceof Series series) {
-                if (series.getTotalEpisodes() != null) {
-                    series.setWatchedEpisodes(series.getTotalEpisodes());
-                }
-            }
+            item.markAsCompleted();
             mediaRepository.save(item);
         });
     }
@@ -120,15 +88,12 @@ public class MediaService {
         stats.setTotalItems(proj.getTotalItems());
         stats.setMovieCount(proj.getMovieCount());
         stats.setSeriesCount(proj.getSeriesCount());
-
         stats.setCompletedCount(proj.getCompletedCount());
         stats.setWatchingCount(proj.getWatchingCount());
         stats.setPlannedCount(proj.getPlannedCount());
         stats.setDroppedCount(proj.getDroppedCount());
-
         stats.setTotalDurationMinutes(proj.getTotalDuration());
         stats.setWatchedDurationMinutes(proj.getWatchedDuration());
-
         stats.setMovieWatchedMinutes(proj.getMovieWatched());
         stats.setLiveActionWatchedMinutes(proj.getLiveActionWatched());
         stats.setAnimeWatchedMinutes(proj.getAnimeWatched());
