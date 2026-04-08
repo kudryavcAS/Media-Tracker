@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.annotations.Formula;
 
@@ -39,14 +36,10 @@ public abstract class MediaItem {
     @Column(name = "content_type", insertable = false, updatable = false)
     private String contentType;
 
-    @NotBlank(message = "Title cannot be empty")
     private String title;
 
-    @NotNull(message = "Release year is required")
-    @Min(value = 1888, message = "Year must be no earlier than 1888")
     private Integer releaseYear;
 
-    @Min(value = 1, message = "Duration must be greater than 0")
     private Integer durationMinutes;
 
     private String directors;

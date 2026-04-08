@@ -1,5 +1,7 @@
 package com.tracker.mediatracker.controller;
 
+import com.tracker.mediatracker.dto.MovieFormDto;
+import com.tracker.mediatracker.dto.SeriesFormDto;
 import com.tracker.mediatracker.model.MediaItem;
 import com.tracker.mediatracker.model.Movie;
 import com.tracker.mediatracker.model.Series;
@@ -39,32 +41,32 @@ public class MediaController {
 
     @GetMapping("/add/movie")
     public String showAddMovieForm(Model model) {
-        model.addAttribute("movie", new Movie());
+        model.addAttribute("movie", new MovieFormDto());
         return "movie_form";
     }
 
     @PostMapping("/save/movie")
-    public String saveMovie(@Valid @ModelAttribute Movie movie, BindingResult bindingResult) {
+    public String saveMovie(@Valid @ModelAttribute("movie") MovieFormDto movieDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return "movie_form";
         }
-        service.save(movie);
-        return "redirect:/#main-row-" + movie.getId();
+        Long id = service.saveMovie(movieDto);
+        return "redirect:/#main-row-" + id;
     }
 
     @GetMapping("/add/series")
     public String showAddSeriesForm(Model model) {
-        model.addAttribute("series", new Series());
+        model.addAttribute("series", new SeriesFormDto());
         return "series_form";
     }
 
     @PostMapping("/save/series")
-    public String saveSeries(@Valid @ModelAttribute Series series, BindingResult bindingResult) {
+    public String saveSeries(@Valid @ModelAttribute("series") SeriesFormDto seriesDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return "series_form";
         }
-        service.save(series);
-        return "redirect:/#main-row-" + series.getId();
+        Long id = service.saveSeries(seriesDto);
+        return "redirect:/#main-row-" + id;
     }
 
     @PostMapping("/series/{id}/inc")
@@ -93,11 +95,11 @@ public class MediaController {
                 return REDIRECT_HOME;
             }
             case Movie movie -> {
-                model.addAttribute("movie", movie);
+                model.addAttribute("movie", MovieFormDto.fromEntity(movie));
                 return "movie_form";
             }
             case Series series -> {
-                model.addAttribute("series", series);
+                model.addAttribute("series", SeriesFormDto.fromEntity(series));
                 return "series_form";
             }
             default -> {

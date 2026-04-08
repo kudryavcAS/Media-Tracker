@@ -1,7 +1,10 @@
 package com.tracker.mediatracker.service;
 
+import com.tracker.mediatracker.dto.MovieFormDto;
+import com.tracker.mediatracker.dto.SeriesFormDto;
 import com.tracker.mediatracker.dto.StatisticsDto;
 import com.tracker.mediatracker.model.MediaItem;
+import com.tracker.mediatracker.model.Movie;
 import com.tracker.mediatracker.model.Series;
 import com.tracker.mediatracker.model.SortField;
 import com.tracker.mediatracker.repo.MediaItemRepository;
@@ -44,13 +47,28 @@ public class MediaService {
     public MediaItem findById(Long id) {
         return mediaRepository.findById(id).orElse(null);
     }
+    
+    @Transactional
+    public Long saveMovie(MovieFormDto dto) {
+        Movie movie = new Movie();
+        if (dto.getId() != null) {
+            movie = (Movie) mediaRepository.findById(dto.getId()).orElse(new Movie());
+        }
+        dto.updateEntity(movie);
+        mediaRepository.save(movie);
+        return movie.getId();
+    }
 
     @Transactional
-    public void save(MediaItem item) {
-        if (item instanceof Series series) {
-            series.syncState();
+    public Long saveSeries(SeriesFormDto dto) {
+        Series series = new Series();
+        if (dto.getId() != null) {
+            series = (Series) mediaRepository.findById(dto.getId()).orElse(new Series());
         }
-        mediaRepository.save(item);
+        dto.updateEntity(series);
+        series.syncState();
+        mediaRepository.save(series);
+        return series.getId();
     }
 
     @Transactional
