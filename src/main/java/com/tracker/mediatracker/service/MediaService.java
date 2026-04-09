@@ -11,12 +11,13 @@ import com.tracker.mediatracker.repo.MediaItemRepository;
 import com.tracker.mediatracker.repo.MediaSpecifications;
 import com.tracker.mediatracker.repo.StatsProjection;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,10 +25,13 @@ public class MediaService {
 
     private final MediaItemRepository mediaRepository;
 
-    public List<MediaItem> getFilteredAndSortedItems(String typeFilter, String statusFilter, String sortParam, String query) {
+    public Page<MediaItem> getFilteredAndSortedItems(String typeFilter, String statusFilter, String sortParam, String query, int page, int size) {
         Specification<MediaItem> spec = MediaSpecifications.withFilters(typeFilter, statusFilter, query);
         Sort sort = createSort(sortParam);
-        return mediaRepository.findAll(spec, sort);
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return mediaRepository.findAll(spec, pageable);
     }
 
     private Sort createSort(String sortParam) {
@@ -47,7 +51,7 @@ public class MediaService {
     public MediaItem findById(Long id) {
         return mediaRepository.findById(id).orElse(null);
     }
-    
+
     @Transactional
     public Long saveMovie(MovieFormDto dto) {
         Movie movie = new Movie();

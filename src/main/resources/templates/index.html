@@ -47,7 +47,8 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" th:classappend="${currentType == 'SERIES' ? 'active' : ''}"
-                   th:href="@{/(type='SERIES', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">All Series</a>
+                   th:href="@{/(type='SERIES', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">All
+                    Series</a>
             </li>
             <li class="nav-item ms-2 border-start ps-2"></li>
             <li class="nav-item">
@@ -60,7 +61,8 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" th:classappend="${currentType == 'LIVE_ACTION' ? 'active' : ''}"
-                   th:href="@{/(type='LIVE_ACTION', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Live Action</a>
+                   th:href="@{/(type='LIVE_ACTION', status=${currentStatus}, sort=${currentSort}, q=${currentQuery})}">Live
+                    Action</a>
             </li>
         </ul>
 
@@ -72,7 +74,8 @@
 
                 <div class="input-group">
                     <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Search..." th:value="${currentQuery}" aria-label="Search">
+                    <input type="text" name="q" class="form-control" placeholder="Search..." th:value="${currentQuery}"
+                           aria-label="Search">
                 </div>
             </form>
 
@@ -110,7 +113,8 @@
             <a class="sort-link d-inline" th:classappend="${currentSort == 'title' ? 'active-sort' : ''}"
                th:href="@{/(type=${currentType}, status=${currentStatus}, sort='title', q=${currentQuery})}">Title</a>
             <span class="text-muted mx-1">/</span>
-            <a class="sort-link d-inline fw-normal" style="font-size: 0.9em;" th:classappend="${currentSort == 'progress' ? 'active-sort fw-bold' : ''}"
+            <a class="sort-link d-inline fw-normal" style="font-size: 0.9em;"
+               th:classappend="${currentSort == 'progress' ? 'active-sort fw-bold' : ''}"
                th:href="@{/(type=${currentType}, status=${currentStatus}, sort='progress', q=${currentQuery})}">Progress</a>
         </th>
         <th>
@@ -123,7 +127,8 @@
         </th>
         <th class="text-nowrap">
             <a class="sort-link" th:classappend="${currentSort == 'duration' ? 'active-sort' : ''}"
-               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='duration', q=${currentQuery})}">Duration (min)</a>
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort='duration', q=${currentQuery})}">Duration
+                (min)</a>
         </th>
         <th>
             <a class="sort-link" th:classappend="${currentSort == 'status' ? 'active-sort' : ''}"
@@ -172,7 +177,8 @@
 
         <td class="pe-3" onclick="event.stopPropagation()">
             <div class="d-flex justify-content-end gap-2">
-                <form th:if="${item.status.name() != 'COMPLETED'}" th:action="@{'/item/' + ${item.id} + '/complete'}" method="post" class="m-0 ajax-form" th:data-id="${item.id}">
+                <form th:if="${item.status.name() != 'COMPLETED'}" th:action="@{'/item/' + ${item.id} + '/complete'}"
+                      method="post" class="m-0 ajax-form" th:data-id="${item.id}">
                     <button class="btn btn-sm btn-outline-secondary border-0" title="Mark as completed">
                         <i class="bi bi-check-circle fs-5"></i>
                     </button>
@@ -194,11 +200,14 @@
                     <div>
                         <h5>Watch Progress</h5>
                         <div class="d-flex align-items-center gap-3">
-                            <form th:action="@{'/series/' + ${item.id} + '/dec'}" method="post" class="m-0 ajax-form" th:data-id="${item.id}">
+                            <form th:action="@{'/series/' + ${item.id} + '/dec'}" method="post" class="m-0 ajax-form"
+                                  th:data-id="${item.id}">
                                 <button class="btn btn-outline-danger btn-sm fw-bold" style="width: 30px;">-</button>
                             </form>
-                            <span class="fs-5 fw-bold" th:text="${watched} + ' / ' + (${total > 0 ? total : '?'})"></span>
-                            <form th:action="@{'/series/' + ${item.id} + '/inc'}" method="post" class="m-0 ajax-form" th:data-id="${item.id}">
+                            <span class="fs-5 fw-bold"
+                                  th:text="${watched} + ' / ' + (${total > 0 ? total : '?'})"></span>
+                            <form th:action="@{'/series/' + ${item.id} + '/inc'}" method="post" class="m-0 ajax-form"
+                                  th:data-id="${item.id}">
                                 <button class="btn btn-outline-success btn-sm fw-bold" style="width: 30px;">+</button>
                             </form>
                         </div>
@@ -218,6 +227,28 @@
     </tr>
     </tbody>
 </table>
+
+<nav th:if="${totalPages > 1}" aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort=${currentSort}, q=${currentQuery}, page=${currentPage - 1})}">Previous</a>
+        </li>
+
+        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+            th:classappend="${currentPage == i} ? 'active'"
+            th:if="${i >= currentPage - 2 and i <= currentPage + 2}">
+            <a class="page-link"
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort=${currentSort}, q=${currentQuery}, page=${i})}"
+               th:text="${i + 1}">1</a>
+        </li>
+
+        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort=${currentSort}, q=${currentQuery}, page=${currentPage + 1})}">Next</a>
+        </li>
+    </ul>
+</nav>
 
 <div th:if="${items.isEmpty()}" class="text-center mt-5 text-muted">
     <h4>The list is empty or nothing was found 🦕</h4>
@@ -244,7 +275,7 @@
         highlightSearch();
     });
 
-    document.addEventListener('submit', async function(e) {
+    document.addEventListener('submit', async function (e) {
         if (e.target.matches('.ajax-form')) {
             e.preventDefault();
 
@@ -255,7 +286,7 @@
             btns.forEach(b => b.disabled = true);
 
             try {
-                const response = await fetch(form.action, { method: 'POST' });
+                const response = await fetch(form.action, {method: 'POST'});
 
                 if (response.ok) {
                     const html = await response.text();

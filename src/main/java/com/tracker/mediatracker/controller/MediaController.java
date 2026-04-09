@@ -8,6 +8,7 @@ import com.tracker.mediatracker.model.Series;
 import com.tracker.mediatracker.service.MediaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,9 +28,15 @@ public class MediaController {
                         @RequestParam(required = false, defaultValue = FILTER_ALL) String status,
                         @RequestParam(required = false) String sort,
                         @RequestParam(required = false) String q,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "50") int size,
                         Model model) {
 
-        model.addAttribute("items", service.getFilteredAndSortedItems(type, status, sort, q));
+        Page<MediaItem> itemPage = service.getFilteredAndSortedItems(type, status, sort, q, page, size);
+
+        model.addAttribute("items", itemPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", itemPage.getTotalPages());
 
         model.addAttribute("currentType", type);
         model.addAttribute("currentStatus", status);
