@@ -11,7 +11,7 @@
     }
 
     .clickable-row {
-        scroll-margin-top: 80px;
+        scroll-margin-top: 40vh;
     }
 
     .row-completed, .row-completed > td {
@@ -20,6 +20,15 @@
 
     .table-hover tbody tr:hover.row-completed, .table-hover tbody tr:hover.row-completed > td {
         background-color: #c1d6cc !important;
+    }
+
+    @keyframes highlight-row {
+        0% { background-color: #fff3cd; }
+        100% { background-color: transparent; }
+    }
+
+    .clickable-row:target {
+        animation: highlight-row 2.5s ease-out;
     }
 </style>
 
