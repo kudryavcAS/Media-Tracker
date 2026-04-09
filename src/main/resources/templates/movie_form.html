@@ -11,6 +11,7 @@
         <form th:action="@{/save/movie}" th:object="${movie}" method="post">
 
             <input type="hidden" th:field="*{id}">
+            <input type="hidden" name="returnUrl" th:value="${returnUrl}">
 
             <div class="mb-3">
                 <label class="form-label fw-bold">Title</label>
@@ -43,7 +44,8 @@
 
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <div>
-                    <a href="/" class="btn btn-secondary">Cancel</a>
+                    <a th:href="${returnUrl != null and !returnUrl.isEmpty() ? returnUrl : '/'}"
+                       class="btn btn-secondary">Cancel</a>
                     <a th:if="${movie.id != null}" th:href="@{'/delete/' + ${movie.id}}"
                        class="btn btn-danger ms-2"
                        onclick="return confirm('Are you sure you want to permanently delete this record?')">Delete</a>

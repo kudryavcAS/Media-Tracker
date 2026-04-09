@@ -49,33 +49,43 @@ public class MediaController {
     }
 
     @GetMapping("/add/movie")
-    public String showAddMovieForm(Model model) {
+    public String showAddMovieForm(Model model, @RequestHeader(value = "referer", required = false) String referer) {
         model.addAttribute("movie", new MovieFormDto());
+        model.addAttribute("returnUrl", referer);
         return "movie_form";
     }
 
     @PostMapping("/save/movie")
-    public String saveMovie(@Valid @ModelAttribute("movie") MovieFormDto movieDto, BindingResult bindingResult) {
+    public String saveMovie(@Valid @ModelAttribute("movie") MovieFormDto movieDto,
+                            BindingResult bindingResult,
+                            @RequestParam(value = "returnUrl", required = false) String returnUrl,
+                            Model model) {
         if (bindingResult.hasErrors()) {
+            model.addAttribute("returnUrl", returnUrl);
             return "movie_form";
         }
         Long id = service.saveMovie(movieDto);
-        return "redirect:/#main-row-" + id;
+        return getSafeRedirect(returnUrl, "#main-row-" + id);
     }
 
     @GetMapping("/add/series")
-    public String showAddSeriesForm(Model model) {
+    public String showAddSeriesForm(Model model, @RequestHeader(value = "referer", required = false) String referer) {
         model.addAttribute("series", new SeriesFormDto());
+        model.addAttribute("returnUrl", referer);
         return "series_form";
     }
 
     @PostMapping("/save/series")
-    public String saveSeries(@Valid @ModelAttribute("series") SeriesFormDto seriesDto, BindingResult bindingResult) {
+    public String saveSeries(@Valid @ModelAttribute("series") SeriesFormDto seriesDto,
+                             BindingResult bindingResult,
+                             @RequestParam(value = "returnUrl", required = false) String returnUrl,
+                             Model model) {
         if (bindingResult.hasErrors()) {
+            model.addAttribute("returnUrl", returnUrl);
             return "series_form";
         }
         Long id = service.saveSeries(seriesDto);
-        return "redirect:/#main-row-" + id;
+        return getSafeRedirect(returnUrl, "#main-row-" + id);
     }
 
     @PostMapping("/series/{id}/inc")
@@ -97,8 +107,10 @@ public class MediaController {
     }
 
     @GetMapping("/edit/{id}")
-    public String editItem(@PathVariable Long id, Model model) {
+    public String editItem(@PathVariable Long id, Model model, @RequestHeader(value = "referer", required = false) String referer) {
         MediaItem item = service.findById(id);
+        model.addAttribute("returnUrl", referer);
+
         switch (item) {
             case null -> {
                 return REDIRECT_HOME;
@@ -114,7 +126,6 @@ public class MediaController {
             default -> {
             }
         }
-
         return REDIRECT_HOME;
     }
 
@@ -129,10 +140,21 @@ public class MediaController {
         return "settings";
     }
 
-    private String getSafeRedirect(String referer) {
-        if (referer != null && (referer.startsWith("/") || referer.contains("localhost"))) {
-            return "redirect:" + referer;
+    private String getSafeRedirect(String referer, String anchor) {
+        String base = REDIRECT_HOME;
+        if (referer != null && (referer.startsWith("/") || referer.contains("localhost"))
+                && !referer.contains("/edit/") && !referer.contains("/add/")) {
+
+            int hashIndex = referer.indexOf('#');
+            if (hashIndex != -1) {
+                referer = referer.substring(0, hashIndex);
+            }
+            base = "redirect:" + referer;
         }
-        return REDIRECT_HOME;
+        return anchor != null ? base + anchor : base;
+    }
+
+    private String getSafeRedirect(String referer) {
+        return getSafeRedirect(referer, null);
     }
 }
