@@ -230,22 +230,32 @@
 
 <nav th:if="${totalPages > 1}" aria-label="Page navigation" class="mt-4">
     <ul class="pagination justify-content-center">
-        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+        <li class="page-item" th:classappend="${currentPage <= 1} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort=${currentSort}, q=${currentQuery}, page=1)}">First</a>
+        </li>
+
+        <li class="page-item" th:classappend="${currentPage <= 1} ? 'disabled'">
             <a class="page-link"
                th:href="@{/(type=${currentType}, status=${currentStatus}, sort=${currentSort}, q=${currentQuery}, page=${currentPage - 1})}">Previous</a>
         </li>
 
-        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+        <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
             th:classappend="${currentPage == i} ? 'active'"
-            th:if="${i >= currentPage - 2 and i <= currentPage + 2}">
+            th:if="${i >= currentPage - 3 and i <= currentPage + 3}">
             <a class="page-link"
                th:href="@{/(type=${currentType}, status=${currentStatus}, sort=${currentSort}, q=${currentQuery}, page=${i})}"
-               th:text="${i + 1}">1</a>
+               th:text="${i}">1</a>
         </li>
 
-        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+        <li class="page-item" th:classappend="${currentPage >= totalPages} ? 'disabled'">
             <a class="page-link"
                th:href="@{/(type=${currentType}, status=${currentStatus}, sort=${currentSort}, q=${currentQuery}, page=${currentPage + 1})}">Next</a>
+        </li>
+
+        <li class="page-item" th:classappend="${currentPage >= totalPages} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/(type=${currentType}, status=${currentStatus}, sort=${currentSort}, q=${currentQuery}, page=${totalPages})}">Last</a>
         </li>
     </ul>
 </nav>

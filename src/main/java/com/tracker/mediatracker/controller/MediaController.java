@@ -28,11 +28,13 @@ public class MediaController {
                         @RequestParam(required = false, defaultValue = FILTER_ALL) String status,
                         @RequestParam(required = false) String sort,
                         @RequestParam(required = false) String q,
-                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "1") int page,
                         @RequestParam(defaultValue = "50") int size,
                         Model model) {
 
-        Page<MediaItem> itemPage = service.getFilteredAndSortedItems(type, status, sort, q, page, size);
+        int pageIndex = Math.max(0, page - 1);
+
+        Page<MediaItem> itemPage = service.getFilteredAndSortedItems(type, status, sort, q, pageIndex, size);
 
         model.addAttribute("items", itemPage.getContent());
         model.addAttribute("currentPage", page);
