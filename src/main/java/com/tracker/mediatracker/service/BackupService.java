@@ -36,7 +36,7 @@ public class BackupService {
     @Transactional
     public void importData(MultipartFile file, boolean clearBeforeImport) throws IOException {
         if (clearBeforeImport) {
-            repository.deleteAll();
+            repository.deleteAllInBatch();
         }
 
         List<MediaItem> items = objectMapper.readValue(
