@@ -23,11 +23,11 @@
     }
 
     @keyframes highlight-row {
-        0% { background-color: #fff3cd; }
-        100% { background-color: transparent; }
+        0% { box-shadow: inset 0 0 0 9999px #fff3cd; }
+        100% { box-shadow: inset 0 0 0 9999px transparent; }
     }
 
-    .clickable-row:target {
+    table.table tbody tr.clickable-row:target > td {
         animation: highlight-row 2.5s ease-out;
     }
 </style>
@@ -180,7 +180,9 @@
 
         <td>
             <span class="badge"
-                  th:classappend="${item.status.name() == 'COMPLETED' ? 'bg-secondary' : (item.status.name() == 'WATCHING' ? 'bg-warning text-dark' : 'bg-info text-dark')}"
+                  th:classappend="${item.status.name() == 'COMPLETED' ? 'bg-secondary' :
+                                 (item.status.name() == 'WATCHING' ? 'bg-warning text-dark' :
+                                 (item.status.name() == 'DROPPED' ? 'bg-danger' : 'bg-info text-dark'))}"
                   th:text="${item.status.title}"></span>
         </td>
 
