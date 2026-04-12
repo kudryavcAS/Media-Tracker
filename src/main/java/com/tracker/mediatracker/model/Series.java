@@ -37,6 +37,10 @@ public class Series extends MediaItem {
             newVal = total;
         }
 
+        if (change > 0 && this.getStatus() == WatchStatus.DROPPED && newVal > current) {
+            this.setStatus(WatchStatus.WATCHING);
+        }
+
         this.watchedEpisodes = newVal;
         syncState();
     }

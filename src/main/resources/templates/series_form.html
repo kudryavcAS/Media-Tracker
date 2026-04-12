@@ -74,5 +74,87 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const statusSelect = document.getElementById('status');
+        const watchedInput = document.getElementById('watchedEpisodes');
+        const totalInput = document.getElementById('totalEpisodes');
+
+        if (!statusSelect || !watchedInput || !totalInput) return;
+
+        let prevStatus = statusSelect.value;
+
+        statusSelect.addEventListener('change', function () {
+            const currentStatus = this.value;
+            const watched = parseInt(watchedInput.value) || 0;
+            const total = parseInt(totalInput.value) || 0;
+
+            if (currentStatus === 'PLANNED' && watched > 0) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'Changing status to "Planned" will reset your watched episodes to 0.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#198754',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, reset it'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        watchedInput.value = 0;
+                        prevStatus = currentStatus;
+                        highlightInput(watchedInput);
+                    } else {
+                        statusSelect.value = prevStatus;
+                    }
+                });
+                return;
+            }
+            else if (currentStatus === 'COMPLETED' && total > 0 && watched < total) {
+                watchedInput.value = total;
+            }
+            else if ((currentStatus === 'WATCHING' || currentStatus === 'DROPPED') && total > 0 && watched >= total) {
+                const statusName = currentStatus === 'WATCHING' ? 'Watching' : 'Dropped';
+                Swal.fire({
+                    title: 'Episodes Adjusted',
+                    text: `You have already watched all episodes. To switch to "${statusName}", the watched count will be decreased.`,
+                    icon: 'info',
+                    confirmButtonColor: '#0d6efd'
+                });
+                watchedInput.value = Math.max(0, total - 1);
+            }
+
+            prevStatus = currentStatus;
+            highlightInput(watchedInput);
+        });
+
+        function syncStatusFromEpisodes() {
+            const watched = parseInt(watchedInput.value) || 0;
+            const total = parseInt(totalInput.value) || 0;
+
+            if (total > 0 && watched >= total) {
+                statusSelect.value = 'COMPLETED';
+            } else if (watched > 0 && statusSelect.value === 'PLANNED') {
+                statusSelect.value = 'WATCHING';
+            } else if (watched === 0 && statusSelect.value === 'WATCHING') {
+                statusSelect.value = 'PLANNED';
+            } else if (statusSelect.value === 'COMPLETED' && watched < total) {
+                statusSelect.value = 'WATCHING';
+            }
+
+            prevStatus = statusSelect.value;
+        }
+
+        watchedInput.addEventListener('input', syncStatusFromEpisodes);
+        totalInput.addEventListener('input', syncStatusFromEpisodes);
+
+        function highlightInput(element) {
+            element.style.transition = "background-color 0.3s";
+            element.style.backgroundColor = "#e8f5e9";
+            setTimeout(() => element.style.backgroundColor = "", 600);
+        }
+    });
+</script>
+
 </body>
 </html>
