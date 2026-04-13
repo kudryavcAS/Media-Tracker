@@ -26,18 +26,14 @@ public class BackupController {
 
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportData() {
-        try {
-            byte[] data = backupService.exportData();
-            String filename = "media_backup_" + LocalDate.now() + ".json";
 
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(data);
-        } catch (IOException e) {
-            log.error("Failed to export backup", e);
-            return ResponseEntity.internalServerError().build();
-        }
+        byte[] data = backupService.exportData();
+        String filename = "media_backup_" + LocalDate.now() + ".json";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(data);
     }
 
     @PostMapping("/import")
@@ -46,13 +42,9 @@ public class BackupController {
         if (file.isEmpty()) {
             return "redirect:/?error=empty_file";
         }
-        try {
-            boolean clear = "overwrite".equals(mode);
-            backupService.importData(file, clear);
-            return "redirect:/?success=imported";
-        } catch (Exception e) {
-            log.error("Failed to import backup from file: {}", file.getOriginalFilename(), e);
-            return "redirect:/?error=import_failed";
-        }
+
+        boolean clear = "overwrite".equals(mode);
+        backupService.importData(file, clear);
+        return "redirect:/?success=imported";
     }
 }

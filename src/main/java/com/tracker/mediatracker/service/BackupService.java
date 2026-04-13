@@ -26,35 +26,46 @@ public class BackupService {
             .registerModule(new JavaTimeModule())
             .enable(SerializationFeature.INDENT_OUTPUT);
 
-    public byte[] exportData() throws IOException {
+    public byte[] exportData() {
         log.info("Starting database export to JSON...");
         List<MediaItem> allItems = repository.findAll(Sort.by(Sort.Direction.ASC, "id"));
 
-        byte[] data = objectMapper
-                .writerFor(new TypeReference<List<MediaItem>>() {})
-                .writeValueAsBytes(allItems);
+        try {
+            byte[] data = objectMapper
+                    .writerFor(new TypeReference<List<MediaItem>>() {
+                    })
+                    .writeValueAsBytes(allItems);
 
-        log.info("Successfully exported {} items.", allItems.size());
-        return data;
+            log.info("Successfully exported {} items.", allItems.size());
+            return data;
+        } catch (IOException e) {
+            log.error("Error occurred while serializing backup data", e);
+            throw new RuntimeException("Failed to export backup data", e);
+        }
     }
 
     @Transactional
-    public void importData(MultipartFile file, boolean clearBeforeImport) throws IOException {
+    public void importData(MultipartFile file, boolean clearBeforeImport) {
         log.info("Starting database import. Clear existing data: {}", clearBeforeImport);
         if (clearBeforeImport) {
             repository.deleteAllInBatch();
             log.debug("Database cleared successfully.");
         }
 
-        List<MediaItem> items = objectMapper.readValue(
-                file.getInputStream(),
-                new TypeReference<>() {
-                }
-        );
+        try {
+            List<MediaItem> items = objectMapper.readValue(
+                    file.getInputStream(),
+                    new TypeReference<>() {
+                    }
+            );
 
-        items.forEach(item -> item.setId(null));
-        repository.saveAll(items);
+            items.forEach(item -> item.setId(null));
+            repository.saveAll(items);
 
-        log.info("Successfully imported {} items.", items.size());
+            log.info("Successfully imported {} items.", items.size());
+        } catch (IOException e) {
+            log.error("Error occurred while reading backup file: {}", file.getOriginalFilename(), e);
+            throw new RuntimeException("Failed to parse backup file", e);
+        }
     }
 }
