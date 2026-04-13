@@ -2,8 +2,6 @@ package com.tracker.mediatracker.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.tracker.mediatracker.model.MediaItem;
 import com.tracker.mediatracker.repo.MediaItemRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +20,7 @@ import java.util.List;
 public class BackupService {
 
     private final MediaItemRepository repository;
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .enable(SerializationFeature.INDENT_OUTPUT);
+    private final ObjectMapper objectMapper;
 
     public byte[] exportData() {
         log.info("Starting database export to JSON...");
@@ -55,9 +51,14 @@ public class BackupService {
         try {
             List<MediaItem> items = objectMapper.readValue(
                     file.getInputStream(),
-                    new TypeReference<>() {
-                    }
-            );
+                    new TypeReference<>() {});
+
+            if (!clearBeforeImport) {
+                List<MediaItem> existing = repository.findAll();
+                items.removeIf(newItem -> existing.stream()
+                        .anyMatch(ex -> ex.getTitle().equalsIgnoreCase(newItem.getTitle())
+                                && ex.getReleaseYear().equals(newItem.getReleaseYear())));
+            }
 
             items.forEach(item -> item.setId(null));
             repository.saveAll(items);
