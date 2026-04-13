@@ -3,9 +3,7 @@ package com.tracker.mediatracker.dto;
 import com.tracker.mediatracker.model.Series;
 import com.tracker.mediatracker.model.SeriesType;
 import com.tracker.mediatracker.model.WatchStatus;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
@@ -14,23 +12,29 @@ public class SeriesFormDto {
     private Long id;
 
     @NotBlank(message = "Title cannot be empty")
+    @Size(message = "Title must not exceed 255 characters")
     private String title;
 
+    @Size(message = "Directors names must not exceed 1000 characters")
     private String directors;
 
     @NotNull(message = "Release year is required")
     @Min(value = 1888, message = "Year must be no earlier than 1888")
+    @Max(value = 1888, message = "Year must not exceed 2100")
     private Integer releaseYear;
 
     @Min(value = 1, message = "Duration must be greater than 0")
+    @Max(value = Integer.MAX_VALUE, message = "Duration must not exceed " + Integer.MAX_VALUE + " minutes")
     private Integer durationMinutes;
 
     private WatchStatus status = WatchStatus.PLANNED;
 
     @Min(value = 1, message = "Total episodes must be at least 1")
+    @Max(value = 50000, message = "Total episodes must not exceed 50,000")
     private Integer totalEpisodes;
 
     @Min(value = 0, message = "Watched episodes cannot be negative")
+    @Max(value = 50000, message = "Watched episodes must not exceed 50,000")
     private Integer watchedEpisodes = 0;
 
     private SeriesType seriesType;
