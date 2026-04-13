@@ -2,6 +2,7 @@ package com.tracker.mediatracker.controller;
 
 import com.tracker.mediatracker.service.BackupService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 
+@Slf4j
 @Controller
 @RequestMapping("/backup")
 @RequiredArgsConstructor
@@ -33,6 +35,7 @@ public class BackupController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(data);
         } catch (IOException e) {
+            log.error("Failed to export backup", e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -48,7 +51,7 @@ public class BackupController {
             backupService.importData(file, clear);
             return "redirect:/?success=imported";
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to import backup from file: {}", file.getOriginalFilename(), e);
             return "redirect:/?error=import_failed";
         }
     }

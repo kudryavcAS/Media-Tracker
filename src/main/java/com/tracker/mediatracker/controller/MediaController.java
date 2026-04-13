@@ -8,12 +8,14 @@ import com.tracker.mediatracker.model.Series;
 import com.tracker.mediatracker.service.MediaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class MediaController {
@@ -61,6 +63,7 @@ public class MediaController {
                             @RequestParam(value = "returnUrl", required = false) String returnUrl,
                             Model model) {
         if (bindingResult.hasErrors()) {
+            log.warn("Validation failed when saving movie: {}", bindingResult.getAllErrors());
             model.addAttribute("returnUrl", returnUrl);
             return "movie_form";
         }
@@ -81,6 +84,7 @@ public class MediaController {
                              @RequestParam(value = "returnUrl", required = false) String returnUrl,
                              Model model) {
         if (bindingResult.hasErrors()) {
+            log.warn("Validation failed when saving series: {}", bindingResult.getAllErrors());
             model.addAttribute("returnUrl", returnUrl);
             return "series_form";
         }
@@ -113,6 +117,7 @@ public class MediaController {
 
         switch (item) {
             case null -> {
+                log.warn("Attempted to edit non-existent item with ID: {}", id);
                 return REDIRECT_HOME;
             }
             case Movie movie -> {
