@@ -19,7 +19,7 @@ public class MovieFormDto {
 
     @NotNull(message = "Release year is required")
     @Min(value = 1888, message = "Year must be no earlier than 1888")
-    @Max(value = 1888, message = "Year must not exceed 2100")
+    @Max(value = 2100, message = "Year must not exceed 2100")
     private Integer releaseYear;
 
     @Min(value = 1, message = "Duration must be greater than 0")
