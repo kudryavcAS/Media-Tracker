@@ -15,42 +15,65 @@
 
             <div class="mb-3">
                 <label class="form-label fw-bold">Title</label>
-                <input type="text" class="form-control" th:field="*{title}" required>
+                <input type="text" class="form-control" th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'"
+                       th:field="*{title}" required>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Director(s)</label>
-                <input type="text" class="form-control" th:field="*{directors}">
+                <input type="text" class="form-control"
+                       th:classappend="${#fields.hasErrors('directors')} ? 'is-invalid'" th:field="*{directors}">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('directors')}" th:errors="*{directors}"></div>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Series Type</label>
-                    <select class="form-select" th:field="*{seriesType}">
+                    <select class="form-select" th:classappend="${#fields.hasErrors('seriesType')} ? 'is-invalid'"
+                            th:field="*{seriesType}">
                         <option th:each="type : ${T(com.tracker.mediatracker.model.SeriesType).values()}"
                                 th:value="${type}" th:text="${type.title}"></option>
                     </select>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('seriesType')}"
+                         th:errors="*{seriesType}"></div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Total Episodes</label>
-                    <input type="number" class="form-control" th:field="*{totalEpisodes}">
+                    <input type="number" class="form-control"
+                           th:classappend="${#fields.hasErrors('totalEpisodes')} ? 'is-invalid'"
+                           th:field="*{totalEpisodes}">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('totalEpisodes')}"
+                         th:errors="*{totalEpisodes}"></div>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Release Year</label>
-                    <input type="number" class="form-control" th:field="*{releaseYear}" min="1888" max="2100">
+                    <input type="number" class="form-control"
+                           th:classappend="${#fields.hasErrors('releaseYear')} ? 'is-invalid'" th:field="*{releaseYear}"
+                           min="1888" max="2100">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('releaseYear')}"
+                         th:errors="*{releaseYear}"></div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Episodes Watched</label>
-                    <input type="number" class="form-control" th:field="*{watchedEpisodes}" placeholder="0">
+                    <input type="number" class="form-control"
+                           th:classappend="${#fields.hasErrors('watchedEpisodes')} ? 'is-invalid'"
+                           th:field="*{watchedEpisodes}" placeholder="0">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('watchedEpisodes')}"
+                         th:errors="*{watchedEpisodes}"></div>
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Total Duration (minutes)</label>
-                <input type="number" class="form-control" th:field="*{durationMinutes}">
+                <input type="number" class="form-control"
+                       th:classappend="${#fields.hasErrors('durationMinutes')} ? 'is-invalid'"
+                       th:field="*{durationMinutes}">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('durationMinutes')}"
+                     th:errors="*{durationMinutes}"></div>
             </div>
 
             <div class="mb-3">
@@ -109,11 +132,9 @@
                     }
                 });
                 return;
-            }
-            else if (currentStatus === 'COMPLETED' && total > 0 && watched < total) {
+            } else if (currentStatus === 'COMPLETED' && total > 0 && watched < total) {
                 watchedInput.value = total;
-            }
-            else if ((currentStatus === 'WATCHING' || currentStatus === 'DROPPED') && total > 0 && watched >= total) {
+            } else if ((currentStatus === 'WATCHING' || currentStatus === 'DROPPED') && total > 0 && watched >= total) {
                 const statusName = currentStatus === 'WATCHING' ? 'Watching' : 'Dropped';
                 Swal.fire({
                     title: 'Episodes Adjusted',
