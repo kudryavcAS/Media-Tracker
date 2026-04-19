@@ -321,12 +321,20 @@
                     const oldDetailsRow = document.getElementById('details-' + seriesId);
                     const newDetailsRow = doc.getElementById('details-' + seriesId);
 
-                    if (oldMainRow && newMainRow) {
-                        oldMainRow.innerHTML = newMainRow.innerHTML;
-                        oldMainRow.className = newMainRow.className;
+                    if (oldMainRow) {
+                        if (newMainRow) {
+                            oldMainRow.innerHTML = newMainRow.innerHTML;
+                            oldMainRow.className = newMainRow.className;
+                        } else {
+                            oldMainRow.remove();
+                        }
                     }
-                    if (oldDetailsRow && newDetailsRow) {
-                        oldDetailsRow.innerHTML = newDetailsRow.innerHTML;
+                    if (oldDetailsRow) {
+                        if (newDetailsRow) {
+                            oldDetailsRow.innerHTML = newDetailsRow.innerHTML;
+                        } else {
+                            oldDetailsRow.remove();
+                        }
                     }
 
                     highlightSearch();
