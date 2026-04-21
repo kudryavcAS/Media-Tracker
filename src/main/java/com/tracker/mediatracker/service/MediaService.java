@@ -4,10 +4,7 @@ import com.tracker.mediatracker.dto.MovieFormDto;
 import com.tracker.mediatracker.dto.SeriesFormDto;
 import com.tracker.mediatracker.dto.StatisticsDto;
 import com.tracker.mediatracker.model.*;
-import com.tracker.mediatracker.repo.MediaItemRepository;
-import com.tracker.mediatracker.repo.MediaSpecifications;
-import com.tracker.mediatracker.repo.StatsProjection;
-import com.tracker.mediatracker.repo.WatchLogRepository;
+import com.tracker.mediatracker.repo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -213,4 +211,11 @@ public class MediaService {
 
         return stats;
     }
+    
+    public List<ChartDataProjection> getChartData(int days) {
+        log.debug("Fetching chart data for the last {} days", days);
+        LocalDateTime startDate = LocalDateTime.now().minusDays(days);
+        return watchLogRepository.getWatchActivitySince(startDate);
+    }
+
 }
