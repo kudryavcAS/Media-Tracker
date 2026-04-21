@@ -15,6 +15,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -214,7 +215,7 @@ public class MediaService {
     
     public List<ChartDataProjection> getChartData(int days) {
         log.debug("Fetching chart data for the last {} days", days);
-        LocalDateTime startDate = LocalDateTime.now().minusDays(days);
+        LocalDateTime startDate = LocalDate.now().minusDays(days - 1).atStartOfDay();
         return watchLogRepository.getWatchActivitySince(startDate);
     }
 

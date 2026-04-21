@@ -192,7 +192,10 @@
             }
         }
 
-        rangeSelect.addEventListener('change', (e) => loadChart(e.target.value));
+        rangeSelect.addEventListener('change', (e) => {
+            e.preventDefault();
+            loadChart(e.target.value);
+        });
         loadChart(14);
     });
 </script>
