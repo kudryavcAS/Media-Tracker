@@ -46,19 +46,23 @@
                 <div class="text-start px-2">
                     <p class="mb-3 d-flex justify-content-between border-bottom pb-2">
                         <span class="fw-bold">Movies</span>
-                        <span class="text-muted" th:text="${stats.formatTime(stats.movieWatchedMinutes)} + ' (' + ${stats.formatHours(stats.movieWatchedMinutes)} + ')'"></span>
+                        <span class="text-muted"
+                              th:text="${stats.formatTime(stats.movieWatchedMinutes)} + ' (' + ${stats.formatHours(stats.movieWatchedMinutes)} + ')'"></span>
                     </p>
                     <p class="mb-3 d-flex justify-content-between border-bottom pb-2">
                         <span class="fw-bold">Live Action</span>
-                        <span class="text-muted" th:text="${stats.formatTime(stats.liveActionWatchedMinutes)} + ' (' + ${stats.formatHours(stats.liveActionWatchedMinutes)} + ')'"></span>
+                        <span class="text-muted"
+                              th:text="${stats.formatTime(stats.liveActionWatchedMinutes)} + ' (' + ${stats.formatHours(stats.liveActionWatchedMinutes)} + ')'"></span>
                     </p>
                     <p class="mb-3 d-flex justify-content-between border-bottom pb-2">
                         <span class="fw-bold">Anime</span>
-                        <span class="text-muted" th:text="${stats.formatTime(stats.animeWatchedMinutes)} + ' (' + ${stats.formatHours(stats.animeWatchedMinutes)} + ')'"></span>
+                        <span class="text-muted"
+                              th:text="${stats.formatTime(stats.animeWatchedMinutes)} + ' (' + ${stats.formatHours(stats.animeWatchedMinutes)} + ')'"></span>
                     </p>
                     <p class="mb-0 d-flex justify-content-between">
                         <span class="fw-bold">Animation</span>
-                        <span class="text-muted" th:text="${stats.formatTime(stats.animationWatchedMinutes)} + ' (' + ${stats.formatHours(stats.animationWatchedMinutes)} + ')'"></span>
+                        <span class="text-muted"
+                              th:text="${stats.formatTime(stats.animationWatchedMinutes)} + ' (' + ${stats.formatHours(stats.animationWatchedMinutes)} + ')'"></span>
                     </p>
                 </div>
             </div>
@@ -110,6 +114,88 @@
         </div>
     </div>
 </div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0 text-success fw-bold">Watch Activity</h5>
+                <select id="chartRange" class="form-select form-select-sm w-auto" aria-label="Select range">
+                    <option value="7">Last 7 Days</option>
+                    <option value="14" selected>Last 14 Days</option>
+                    <option value="30">Last 30 Days</option>
+                    <option value="365">Last Year</option>
+                </select>
+            </div>
+            <div class="card-body">
+                <canvas id="watchChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById('watchChart').getContext('2d');
+        const rangeSelect = document.getElementById('chartRange');
+        let watchChart;
+
+        async function loadChart(days) {
+            try {
+                const response = await fetch(`/api/stats/chart?days=${days}`);
+                const data = await response.json();
+
+                const labels = data.map(d => d.watchDate);
+                const values = data.map(d => d.totalMinutes);
+
+                if (watchChart) {
+                    watchChart.destroy();
+                }
+
+                watchChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets:[{
+                            label: 'Minutes Watched',
+                            data: values,
+                            backgroundColor: 'rgba(25, 135, 84, 0.7)',
+                            borderColor: 'rgba(25, 135, 84, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            hoverBackgroundColor: 'rgba(25, 135, 84, 0.9)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.raw + ' min.';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                suggestedMax: 120
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to load chart data:', error);
+            }
+        }
+
+        rangeSelect.addEventListener('change', (e) => loadChart(e.target.value));
+        loadChart(14);
+    });
+</script>
 
 </body>
 </html>
