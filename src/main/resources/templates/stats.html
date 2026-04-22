@@ -146,7 +146,14 @@
                 const response = await fetch(`/api/stats/chart?days=${days}`);
                 const data = await response.json();
 
-                const labels = data.map(d => d.watchDate);
+                const labels = data.map(d => {
+                    if (d.watchDate.length === 7) {
+                        const date = new Date(d.watchDate + '-01');
+                        return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+                    }
+                    return d.watchDate;
+                });
+
                 const values = data.map(d => d.totalMinutes);
 
                 if (watchChart) {
@@ -154,26 +161,43 @@
                 }
 
                 watchChart = new Chart(ctx, {
-                    type: 'bar',
                     data: {
                         labels: labels,
-                        datasets:[{
-                            label: 'Minutes Watched',
-                            data: values,
-                            backgroundColor: 'rgba(25, 135, 84, 0.7)',
-                            borderColor: 'rgba(25, 135, 84, 1)',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            hoverBackgroundColor: 'rgba(25, 135, 84, 0.9)'
-                        }]
+                        datasets:[
+                            {
+                                type: 'line',
+                                label: 'Trend',
+                                data: values,
+                                borderColor: 'rgba(13, 110, 253, 0.8)',
+                                borderWidth: 2,
+                                fill: false,
+                                tension: 0.4,
+                                pointRadius: 0
+                            },
+                            {
+                                type: 'bar',
+                                label: 'Minutes Watched',
+                                data: values,
+                                backgroundColor: 'rgba(25, 135, 84, 0.7)',
+                                borderColor: 'rgba(25, 135, 84, 1)',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                hoverBackgroundColor: 'rgba(25, 135, 84, 0.9)'
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
                         plugins: {
                             legend: { display: false },
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
+                                        if (context.dataset.type === 'line') return null;
                                         return context.raw + ' min.';
                                     }
                                 }
@@ -192,10 +216,13 @@
             }
         }
 
-        rangeSelect.addEventListener('change', (e) => {
+        rangeSelect.onchange = function(e) {
             e.preventDefault();
-            loadChart(e.target.value);
-        });
+            e.stopPropagation();
+            loadChart(this.value);
+            return false;
+        };
+
         loadChart(14);
     });
 </script>

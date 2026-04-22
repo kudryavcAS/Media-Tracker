@@ -212,11 +212,16 @@ public class MediaService {
 
         return stats;
     }
-    
+
     public List<ChartDataProjection> getChartData(int days) {
         log.debug("Fetching chart data for the last {} days", days);
-        LocalDateTime startDate = LocalDate.now().minusDays(days - 1).atStartOfDay();
-        return watchLogRepository.getWatchActivitySince(startDate);
+        if (days == 365) {
+            LocalDateTime startDate = java.time.LocalDate.now().withDayOfMonth(1).minusMonths(11).atStartOfDay();
+            return watchLogRepository.getMonthlyWatchActivity(startDate);
+        } else {
+            LocalDateTime startDate = java.time.LocalDate.now().minusDays(days - 1).atStartOfDay();
+            return watchLogRepository.getDailyWatchActivity(startDate);
+        }
     }
 
 }

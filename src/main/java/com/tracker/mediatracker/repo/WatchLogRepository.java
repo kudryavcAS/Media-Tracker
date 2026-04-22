@@ -11,12 +11,22 @@ import java.util.List;
 public interface WatchLogRepository extends JpaRepository<WatchLog, Long> {
 
     @Query(value = """
-        SELECT TO_CHAR(d.date_series, 'YYYY-MM-DD') as watchDate, 
-               COALESCE(SUM(w.minutes_watched), 0) as totalMinutes 
-        FROM generate_series(CAST(:startDate AS timestamp), CURRENT_TIMESTAMP, interval '1 day') AS d(date_series)
-        LEFT JOIN watch_log w ON DATE(w.watched_at) = DATE(d.date_series)
-        GROUP BY d.date_series 
-        ORDER BY d.date_series ASC
-    """, nativeQuery = true)
-    List<ChartDataProjection> getWatchActivitySince(@Param("startDate") LocalDateTime startDate);
+                SELECT TO_CHAR(d.date_series, 'YYYY-MM-DD') as watchDate, 
+                       COALESCE(SUM(w.minutes_watched), 0) as totalMinutes 
+                FROM generate_series(CAST(:startDate AS timestamp), CURRENT_TIMESTAMP, interval '1 day') AS d(date_series)
+                LEFT JOIN watch_log w ON DATE(w.watched_at) = DATE(d.date_series)
+                GROUP BY d.date_series 
+                ORDER BY d.date_series ASC
+            """, nativeQuery = true)
+    List<ChartDataProjection> getDailyWatchActivity(@Param("startDate") LocalDateTime startDate);
+
+    @Query(value = """
+                SELECT TO_CHAR(d.date_series, 'YYYY-MM') as watchDate, 
+                       COALESCE(SUM(w.minutes_watched), 0) as totalMinutes 
+                FROM generate_series(CAST(:startDate AS timestamp), CURRENT_TIMESTAMP, interval '1 month') AS d(date_series)
+                LEFT JOIN watch_log w ON TO_CHAR(w.watched_at, 'YYYY-MM') = TO_CHAR(d.date_series, 'YYYY-MM')
+                GROUP BY d.date_series 
+                ORDER BY d.date_series ASC
+            """, nativeQuery = true)
+    List<ChartDataProjection> getMonthlyWatchActivity(@Param("startDate") LocalDateTime startDate);
 }
