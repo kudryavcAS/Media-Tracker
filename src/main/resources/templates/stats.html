@@ -139,91 +139,95 @@
     document.addEventListener("DOMContentLoaded", function () {
         const ctx = document.getElementById('watchChart').getContext('2d');
         const rangeSelect = document.getElementById('chartRange');
-        let watchChart;
+        let watchChart = null;
+
+        function formatLabels(data) {
+            return data.map(d => {
+                if (d.watchDate.length === 7) {
+                    const date = new Date(d.watchDate + '-01');
+                    return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+                }
+                return d.watchDate;
+            });
+        }
 
         async function loadChart(days) {
             try {
                 const response = await fetch(`/api/stats/chart?days=${days}`);
                 const data = await response.json();
 
-                const labels = data.map(d => {
-                    if (d.watchDate.length === 7) {
-                        const date = new Date(d.watchDate + '-01');
-                        return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
-                    }
-                    return d.watchDate;
-                });
-
+                const labels = formatLabels(data);
                 const values = data.map(d => d.totalMinutes);
 
-                if (watchChart) {
-                    watchChart.destroy();
-                }
-
-                watchChart = new Chart(ctx, {
-                    data: {
-                        labels: labels,
-                        datasets:[
-                            {
-                                type: 'line',
-                                label: 'Trend',
-                                data: values,
-                                borderColor: 'rgba(13, 110, 253, 0.8)',
-                                borderWidth: 2,
-                                fill: false,
-                                tension: 0.4,
-                                pointRadius: 0
-                            },
-                            {
-                                type: 'bar',
-                                label: 'Minutes Watched',
-                                data: values,
-                                backgroundColor: 'rgba(25, 135, 84, 0.7)',
-                                borderColor: 'rgba(25, 135, 84, 1)',
-                                borderWidth: 1,
-                                borderRadius: 4,
-                                hoverBackgroundColor: 'rgba(25, 135, 84, 0.9)'
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false,
+                if (!watchChart) {
+                    watchChart = new Chart(ctx, {
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    type: 'line',
+                                    label: 'Trend',
+                                    data: values,
+                                    borderColor: 'rgba(13, 110, 253, 0.8)',
+                                    borderWidth: 2,
+                                    fill: false,
+                                    tension: 0.4,
+                                    pointRadius: 0
+                                },
+                                {
+                                    type: 'bar',
+                                    label: 'Minutes Watched',
+                                    data: values,
+                                    backgroundColor: 'rgba(25, 135, 84, 0.7)',
+                                    borderColor: 'rgba(25, 135, 84, 1)',
+                                    borderWidth: 1,
+                                    borderRadius: 4,
+                                    hoverBackgroundColor: 'rgba(25, 135, 84, 0.9)'
+                                }
+                            ]
                         },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        if (context.dataset.type === 'line') return null;
-                                        return context.raw + ' min.';
+                        options: {
+                            responsive: true,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false,
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            if (context.dataset.type === 'line') return null;
+                                            return context.raw + ' min.';
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                suggestedMax: 120
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    suggestedMax: 120
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                } else {
+                    watchChart.data.labels = labels;
+                    watchChart.data.datasets[0].data = values;
+                    watchChart.data.datasets[1].data = values;
+                    watchChart.update();
+                }
+
             } catch (error) {
                 console.error('Failed to load chart data:', error);
             }
         }
 
-        rangeSelect.onchange = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        rangeSelect.addEventListener("change", function () {
             loadChart(this.value);
-            return false;
-        };
+        });
 
-        loadChart(14);
+        loadChart(rangeSelect.value);
     });
 </script>
 
