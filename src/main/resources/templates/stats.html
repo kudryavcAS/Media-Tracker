@@ -118,14 +118,26 @@
 <div class="row mb-4">
     <div class="col-12">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 flex-wrap gap-2">
                 <h5 class="mb-0 text-success fw-bold">Watch Activity</h5>
-                <select id="chartRange" class="form-select form-select-sm w-auto" aria-label="Select range">
-                    <option value="7">Last 7 Days</option>
-                    <option value="14" selected>Last 14 Days</option>
-                    <option value="30">Last 30 Days</option>
-                    <option value="365">Last Year</option>
-                </select>
+                <div class="d-flex gap-3 align-items-center">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <input type="radio" class="btn-check" name="chartDisplay" id="btnBoth" value="both" checked>
+                        <label class="btn btn-outline-secondary" for="btnBoth">Both</label>
+
+                        <input type="radio" class="btn-check" name="chartDisplay" id="btnBar" value="bar">
+                        <label class="btn btn-outline-secondary" for="btnBar">Bars</label>
+
+                        <input type="radio" class="btn-check" name="chartDisplay" id="btnLine" value="line">
+                        <label class="btn btn-outline-secondary" for="btnLine">Trend</label>
+                    </div>
+                    <select id="chartRange" class="form-select form-select-sm w-auto">
+                        <option value="7">Last 7 Days</option>
+                        <option value="14" selected>Last 14 Days</option>
+                        <option value="30">Last 30 Days</option>
+                        <option value="365">Last Year</option>
+                    </select>
+                </div>
             </div>
             <div class="card-body">
                 <canvas id="watchChart" height="80"></canvas>
@@ -145,11 +157,21 @@
             return data.map(d => {
                 if (d.watchDate.length === 7) {
                     const date = new Date(d.watchDate + '-01');
-                    return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+                    return date.toLocaleString('en-US', {month: 'short', year: 'numeric'});
                 }
                 return d.watchDate;
             });
         }
+
+        document.querySelectorAll('input[name="chartDisplay"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (!watchChart) return;
+                const mode = this.value;
+                watchChart.data.datasets[0].hidden = (mode === 'bar');
+                watchChart.data.datasets[1].hidden = (mode === 'line');
+                watchChart.update();
+            });
+        });
 
         async function loadChart(days) {
             try {
@@ -193,10 +215,10 @@
                                 intersect: false,
                             },
                             plugins: {
-                                legend: { display: false },
+                                legend: {display: false},
                                 tooltip: {
                                     callbacks: {
-                                        label: function(context) {
+                                        label: function (context) {
                                             if (context.dataset.type === 'line') return null;
                                             return context.raw + ' min.';
                                         }
