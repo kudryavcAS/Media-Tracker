@@ -213,15 +213,18 @@ public class MediaService {
         return stats;
     }
 
-    public List<ChartDataProjection> getChartData(int days) {
-        log.debug("Fetching chart data for the last {} days", days);
-        if (days == 365) {
-            LocalDateTime startDate = java.time.LocalDate.now().withDayOfMonth(1).minusMonths(11).atStartOfDay();
-            return watchLogRepository.getMonthlyWatchActivity(startDate);
-        } else {
-            LocalDateTime startDate = java.time.LocalDate.now().minusDays(days - 1).atStartOfDay();
-            return watchLogRepository.getDailyWatchActivity(startDate);
-        }
+    public List<ChartDataProjection> getChartData(LocalDate start, LocalDate end, String grouping) {
+        log.debug("Fetching chart data from {} to {} with grouping {}", start, end, grouping);
+
+        LocalDateTime startTime = start.atStartOfDay();
+        LocalDateTime endTime = end.atTime(23, 59, 59);
+
+        return switch (grouping.toUpperCase()) {
+            case "WEEK" -> watchLogRepository.getWeeklyActivity(startTime, endTime);
+            case "MONTH" -> watchLogRepository.getMonthlyActivity(startTime, endTime);
+            case "YEAR" -> watchLogRepository.getYearlyActivity(startTime, endTime);
+            default -> watchLogRepository.getDailyActivity(startTime, endTime);
+        };
     }
 
 }
