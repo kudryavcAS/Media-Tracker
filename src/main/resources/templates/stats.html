@@ -118,24 +118,31 @@
 <div class="row mb-4">
     <div class="col-12">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 flex-wrap gap-2">
-                <h5 class="mb-0 text-success fw-bold">Watch Activity</h5>
-                <div class="d-flex gap-3 align-items-center">
-                    <div class="btn-group btn-group-sm" role="group">
-                        <input type="radio" class="btn-check" name="chartDisplay" id="btnBoth" value="both" checked>
-                        <label class="btn btn-outline-secondary" for="btnBoth">Both</label>
-
-                        <input type="radio" class="btn-check" name="chartDisplay" id="btnBar" value="bar">
-                        <label class="btn btn-outline-secondary" for="btnBar">Bars</label>
-
-                        <input type="radio" class="btn-check" name="chartDisplay" id="btnLine" value="line">
-                        <label class="btn btn-outline-secondary" for="btnLine">Trend</label>
+            <div class="card-header bg-white py-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                    <h5 class="mb-0 text-success fw-bold"><i class="bi bi-bar-chart-fill me-2"></i>Watch Activity</h5>
+                    <div class="d-flex gap-4">
+                        <div class="form-check form-switch mt-1">
+                            <input class="form-check-input" type="checkbox" id="toggleTrend" checked>
+                            <label class="form-check-label small fw-bold text-muted" for="toggleTrend">Trend Line</label>
+                        </div>
+                        <div class="form-check form-switch mt-1">
+                            <input class="form-check-input" type="checkbox" id="toggleGenres" checked>
+                            <label class="form-check-label small fw-bold text-muted" for="toggleGenres">Split Genres</label>
+                        </div>
                     </div>
-                    <select id="chartRange" class="form-select form-select-sm w-auto">
-                        <option value="7">Last 7 Days</option>
-                        <option value="14" selected>Last 14 Days</option>
-                        <option value="30">Last 30 Days</option>
-                        <option value="365">Last Year</option>
+                </div>
+                <div class="d-flex flex-wrap gap-2 align-items-center bg-light p-2 rounded border">
+                    <span class="small text-muted fw-bold ms-1">Period:</span>
+                    <input type="date" id="startDate" class="form-control form-control-sm w-auto">
+                    <span class="text-muted">—</span>
+                    <input type="date" id="endDate" class="form-control form-control-sm w-auto">
+                    <span class="small text-muted fw-bold ms-3">Scale:</span>
+                    <select id="grouping" class="form-select form-select-sm w-auto fw-bold text-primary">
+                        <option value="DAY">Daily</option>
+                        <option value="WEEK">Weekly</option>
+                        <option value="MONTH">Monthly</option>
+                        <option value="YEAR">Yearly</option>
                     </select>
                 </div>
             </div>
@@ -150,106 +157,130 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const ctx = document.getElementById('watchChart').getContext('2d');
-        const rangeSelect = document.getElementById('chartRange');
+
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const groupingSelect = document.getElementById('grouping');
+        const toggleTrend = document.getElementById('toggleTrend');
+        const toggleGenres = document.getElementById('toggleGenres');
+
         let watchChart = null;
 
-        function formatLabels(data) {
+        function initDates() {
+            const today = new Date();
+            const past = new Date();
+            past.setDate(today.getDate() - 14);
+
+            const z = n => ('0' + n).slice(-2);
+            const format = d => `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
+
+            startDateInput.value = format(past);
+            endDateInput.value = format(today);
+        }
+
+        function formatLabels(data, grouping) {
             return data.map(d => {
-                if (d.watchDate.length === 7) {
+                if (grouping === 'YEAR') return d.watchDate;
+                if (grouping === 'MONTH') {
                     const date = new Date(d.watchDate + '-01');
-                    return date.toLocaleString('en-US', {month: 'short', year: 'numeric'});
+                    return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
                 }
-                return d.watchDate;
+                const date = new Date(d.watchDate);
+                const formatted = date.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+                return grouping === 'WEEK' ? 'Week ' + formatted : formatted;
             });
         }
 
-        document.querySelectorAll('input[name="chartDisplay"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (!watchChart) return;
-                const mode = this.value;
-                watchChart.data.datasets[0].hidden = (mode === 'bar');
-                watchChart.data.datasets[1].hidden = (mode === 'line');
-                watchChart.update();
-            });
-        });
+        function updateVisibility() {
+            if (!watchChart) return;
+            const split = toggleGenres.checked;
 
-        async function loadChart(days) {
+            watchChart.data.datasets[0].hidden = !toggleTrend.checked;
+            watchChart.data.datasets[1].hidden = split;
+            watchChart.data.datasets[2].hidden = !split;
+            watchChart.data.datasets[3].hidden = !split;
+            watchChart.data.datasets[4].hidden = !split;
+            watchChart.data.datasets[5].hidden = !split;
+
+            watchChart.update();
+        }
+
+        async function loadChart() {
+            const start = startDateInput.value;
+            const end = endDateInput.value;
+            const group = groupingSelect.value;
+
+            if (!start || !end) return;
+
             try {
-                const response = await fetch(`/api/stats/chart?days=${days}`);
+                const response = await fetch(`/api/stats/chart?start=${start}&end=${end}&grouping=${group}`);
                 const data = await response.json();
 
-                const labels = formatLabels(data);
-                const values = data.map(d => d.totalMinutes);
+                const labels = formatLabels(data, group);
 
                 if (!watchChart) {
                     watchChart = new Chart(ctx, {
                         data: {
                             labels: labels,
-                            datasets: [
-                                {
-                                    type: 'line',
-                                    label: 'Trend',
-                                    data: values,
-                                    borderColor: 'rgba(13, 110, 253, 0.8)',
-                                    borderWidth: 2,
-                                    fill: false,
-                                    tension: 0.4,
-                                    pointRadius: 0
-                                },
-                                {
-                                    type: 'bar',
-                                    label: 'Minutes Watched',
-                                    data: values,
-                                    backgroundColor: 'rgba(25, 135, 84, 0.7)',
-                                    borderColor: 'rgba(25, 135, 84, 1)',
-                                    borderWidth: 1,
-                                    borderRadius: 4,
-                                    hoverBackgroundColor: 'rgba(25, 135, 84, 0.9)'
-                                }
+                            datasets:[
+                                { type: 'line', label: 'Trend', data: data.map(d => d.totalMinutes), borderColor: 'rgba(13, 110, 253, 0.8)', borderWidth: 2, fill: false, tension: 0.4, pointRadius: 0 },
+                                { type: 'bar', label: 'Total Watched', data: data.map(d => d.totalMinutes), backgroundColor: 'rgba(25, 135, 84, 0.8)', borderRadius: 4 },
+                                { type: 'bar', label: 'Movies', data: data.map(d => d.movieMinutes), backgroundColor: '#0d6efd' },
+                                { type: 'bar', label: 'Live Action', data: data.map(d => d.liveActionMinutes), backgroundColor: '#20c997' },
+                                { type: 'bar', label: 'Anime', data: data.map(d => d.animeMinutes), backgroundColor: '#fd7e14' },
+                                { type: 'bar', label: 'Animation', data: data.map(d => d.animationMinutes), backgroundColor: '#0dcaf0' }
                             ]
                         },
                         options: {
                             responsive: true,
-                            interaction: {
-                                mode: 'index',
-                                intersect: false,
-                            },
+                            interaction: { mode: 'index', intersect: false },
                             plugins: {
-                                legend: {display: false},
+                                legend: {
+                                    display: true,
+                                    labels: { filter: function(item, chart) { return !item.hidden; } }
+                                },
                                 tooltip: {
                                     callbacks: {
-                                        label: function (context) {
-                                            if (context.dataset.type === 'line') return null;
-                                            return context.raw + ' min.';
+                                        label: function(context) {
+                                            if (context.dataset.type === 'line' || context.raw === 0) return null;
+                                            return context.dataset.label + ': ' + context.raw + ' min.';
                                         }
                                     }
                                 }
                             },
                             scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    suggestedMax: 120
-                                }
+                                x: { stacked: true },
+                                y: { stacked: true, beginAtZero: true, suggestedMax: 120 }
                             }
                         }
                     });
                 } else {
                     watchChart.data.labels = labels;
-                    watchChart.data.datasets[0].data = values;
-                    watchChart.data.datasets[1].data = values;
-                    watchChart.update();
+                    watchChart.data.datasets[0].data = data.map(d => d.totalMinutes);
+                    watchChart.data.datasets[1].data = data.map(d => d.totalMinutes);
+                    watchChart.data.datasets[2].data = data.map(d => d.movieMinutes);
+                    watchChart.data.datasets[3].data = data.map(d => d.liveActionMinutes);
+                    watchChart.data.datasets[4].data = data.map(d => d.animeMinutes);
+                    watchChart.data.datasets[5].data = data.map(d => d.animationMinutes);
                 }
+
+                updateVisibility();
 
             } catch (error) {
                 console.error('Failed to load chart data:', error);
             }
         }
 
-        rangeSelect.addEventListener("change", function () {
-            loadChart(this.value);
-        });
+        initDates();
 
-        loadChart(rangeSelect.value);
+        startDateInput.addEventListener('change', loadChart);
+        endDateInput.addEventListener('change', loadChart);
+        groupingSelect.addEventListener('change', loadChart);
+
+        toggleTrend.addEventListener('change', updateVisibility);
+        toggleGenres.addEventListener('change', updateVisibility);
+
+        loadChart();
     });
 </script>
 
