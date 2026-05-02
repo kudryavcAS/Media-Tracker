@@ -28,4 +28,11 @@ public class StatsRestController {
             @RequestParam(defaultValue = "DAY") String grouping) {
         return mediaService.getChartData(start, end, grouping);
     }
+
+    @GetMapping("/details")
+    public List<com.tracker.mediatracker.model.WatchLog> getWatchDetails(
+            @RequestParam String dateKey,
+            @RequestParam(defaultValue = "DAY") String grouping) {
+        return mediaService.getWatchDetails(dateKey, grouping);
+    }
 }

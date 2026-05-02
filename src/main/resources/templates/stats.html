@@ -124,11 +124,13 @@
                     <div class="d-flex gap-4">
                         <div class="form-check form-switch mt-1">
                             <input class="form-check-input" type="checkbox" id="toggleTrend" checked>
-                            <label class="form-check-label small fw-bold text-muted" for="toggleTrend">Trend Line</label>
+                            <label class="form-check-label small fw-bold text-muted" for="toggleTrend">Trend
+                                Line</label>
                         </div>
                         <div class="form-check form-switch mt-1">
                             <input class="form-check-input" type="checkbox" id="toggleGenres" checked>
-                            <label class="form-check-label small fw-bold text-muted" for="toggleGenres">Split Genres</label>
+                            <label class="form-check-label small fw-bold text-muted" for="toggleGenres">Split
+                                Genres</label>
                         </div>
                     </div>
                 </div>
@@ -148,32 +150,55 @@
             </div>
             <div class="card-body">
                 <canvas id="watchChart" height="80"></canvas>
+                <div id="detailsBox" class="mt-4 d-none">
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 id="detailsTitle" class="fw-bold mb-0 text-secondary"></h6>
+                        <button type="button" class="btn-close btn-sm" id="closeDetails" aria-label="Close"></button>
+                    </div>
+                    <div id="detailsContent" class="d-flex flex-column gap-2"
+                         style="max-height: 250px; overflow-y: auto;">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const ctx = document.getElementById('watchChart').getContext('2d');
-
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
         const groupingSelect = document.getElementById('grouping');
         const toggleTrend = document.getElementById('toggleTrend');
         const toggleGenres = document.getElementById('toggleGenres');
+        const detailsBox = document.getElementById('detailsBox');
+        const detailsTitle = document.getElementById('detailsTitle');
+        const detailsContent = document.getElementById('detailsContent');
 
         let watchChart = null;
+        let currentRawData = [];
+        let currentFormattedLabels = [];
+
+        function updateChartTheme() {
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            Chart.defaults.color = isDark ? '#adb5bd' : '#666';
+            if (watchChart) {
+                if (watchChart.options.scales.x) watchChart.options.scales.x.grid.color = isDark ? '#343a40' : '#e9ecef';
+                if (watchChart.options.scales.y) watchChart.options.scales.y.grid.color = isDark ? '#343a40' : '#e9ecef';
+                watchChart.update();
+            }
+        }
+
+        window.addEventListener('themeChanged', updateChartTheme);
 
         function initDates() {
             const today = new Date();
             const past = new Date();
             past.setDate(today.getDate() - 14);
-
             const z = n => ('0' + n).slice(-2);
             const format = d => `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
-
             startDateInput.value = format(past);
             endDateInput.value = format(today);
         }
@@ -182,11 +207,9 @@
             return data.map(d => {
                 if (grouping === 'YEAR') return d.watchDate;
                 if (grouping === 'MONTH') {
-                    const date = new Date(d.watchDate + '-01');
-                    return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+                    return new Date(d.watchDate + '-01').toLocaleString('en-US', {month: 'short', year: 'numeric'});
                 }
-                const date = new Date(d.watchDate);
-                const formatted = date.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+                const formatted = new Date(d.watchDate).toLocaleString('en-US', {month: 'short', day: 'numeric'});
                 return grouping === 'WEEK' ? 'Week ' + formatted : formatted;
             });
         }
@@ -194,54 +217,146 @@
         function updateVisibility() {
             if (!watchChart) return;
             const split = toggleGenres.checked;
-
             watchChart.data.datasets[0].hidden = !toggleTrend.checked;
             watchChart.data.datasets[1].hidden = split;
             watchChart.data.datasets[2].hidden = !split;
             watchChart.data.datasets[3].hidden = !split;
             watchChart.data.datasets[4].hidden = !split;
             watchChart.data.datasets[5].hidden = !split;
-
             watchChart.update();
+            detailsBox.classList.add('d-none');
+        }
+
+        function getColorByType(type) {
+            switch (type) {
+                case 'MOVIE':
+                    return '#0d6efd';
+                case 'LIVE_ACTION':
+                    return '#20c997';
+                case 'ANIME':
+                    return '#fd7e14';
+                case 'ANIMATION':
+                    return '#0dcaf0';
+                default:
+                    return '#6c757d';
+            }
+        }
+
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('en-US', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+        }
+
+        async function fetchDetails(dateKey, grouping, displayLabel) {
+            try {
+                const response = await fetch(`/api/stats/details?dateKey=${dateKey}&grouping=${grouping}`);
+                const logs = await response.json();
+
+                detailsTitle.textContent = `Activity for ${displayLabel}`;
+                detailsContent.innerHTML = '';
+
+                if (logs.length === 0) {
+                    detailsContent.innerHTML = '<span class="text-muted">No details available.</span>';
+                } else {
+                    logs.forEach(log => {
+                        const color = getColorByType(log.mediaType);
+                        const item = document.createElement('div');
+                        item.className = 'd-flex justify-content-between p-2 rounded bg-body-tertiary';
+                        item.innerHTML = `
+                            <div>
+                                <span class="fw-bold" style="color: ${color}">● ${log.title}</span>
+                                <small class="text-muted ms-2">${formatTime(log.watchedAt)}</small>
+                            </div>
+                            <span class="fw-bold">${log.minutesWatched} min</span>
+                        `;
+                        detailsContent.appendChild(item);
+                    });
+                }
+                detailsBox.classList.remove('d-none');
+            } catch (e) {
+                console.error('Failed to load details', e);
+            }
         }
 
         async function loadChart() {
             const start = startDateInput.value;
             const end = endDateInput.value;
             const group = groupingSelect.value;
-
             if (!start || !end) return;
 
             try {
                 const response = await fetch(`/api/stats/chart?start=${start}&end=${end}&grouping=${group}`);
-                const data = await response.json();
-
-                const labels = formatLabels(data, group);
+                currentRawData = await response.json();
+                currentFormattedLabels = formatLabels(currentRawData, group);
 
                 if (!watchChart) {
                     watchChart = new Chart(ctx, {
                         data: {
-                            labels: labels,
-                            datasets:[
-                                { type: 'line', label: 'Trend', data: data.map(d => d.totalMinutes), borderColor: 'rgba(13, 110, 253, 0.8)', borderWidth: 2, fill: false, tension: 0.4, pointRadius: 0 },
-                                { type: 'bar', label: 'Total Watched', data: data.map(d => d.totalMinutes), backgroundColor: 'rgba(25, 135, 84, 0.8)', borderRadius: 4 },
-                                { type: 'bar', label: 'Movies', data: data.map(d => d.movieMinutes), backgroundColor: '#0d6efd' },
-                                { type: 'bar', label: 'Live Action', data: data.map(d => d.liveActionMinutes), backgroundColor: '#20c997' },
-                                { type: 'bar', label: 'Anime', data: data.map(d => d.animeMinutes), backgroundColor: '#fd7e14' },
-                                { type: 'bar', label: 'Animation', data: data.map(d => d.animationMinutes), backgroundColor: '#0dcaf0' }
+                            labels: currentFormattedLabels,
+                            datasets: [
+                                {
+                                    type: 'line',
+                                    label: 'Trend',
+                                    data: currentRawData.map(d => d.totalMinutes),
+                                    borderColor: 'rgba(13, 110, 253, 0.8)',
+                                    borderWidth: 2,
+                                    fill: false,
+                                    tension: 0.4,
+                                    pointRadius: 0
+                                },
+                                {
+                                    type: 'bar',
+                                    label: 'Total Watched',
+                                    data: currentRawData.map(d => d.totalMinutes),
+                                    backgroundColor: 'rgba(25, 135, 84, 0.8)',
+                                    borderRadius: 4
+                                },
+                                {
+                                    type: 'bar',
+                                    label: 'Movies',
+                                    data: currentRawData.map(d => d.movieMinutes),
+                                    backgroundColor: '#0d6efd'
+                                },
+                                {
+                                    type: 'bar',
+                                    label: 'Live Action',
+                                    data: currentRawData.map(d => d.liveActionMinutes),
+                                    backgroundColor: '#20c997'
+                                },
+                                {
+                                    type: 'bar',
+                                    label: 'Anime',
+                                    data: currentRawData.map(d => d.animeMinutes),
+                                    backgroundColor: '#fd7e14'
+                                },
+                                {
+                                    type: 'bar',
+                                    label: 'Animation',
+                                    data: currentRawData.map(d => d.animationMinutes),
+                                    backgroundColor: '#0dcaf0'
+                                }
                             ]
                         },
                         options: {
                             responsive: true,
-                            interaction: { mode: 'index', intersect: false },
+                            interaction: {mode: 'index', intersect: false},
+                            onClick: (e, activeEls) => {
+                                if (activeEls.length === 0) return;
+                                const index = activeEls[0].index;
+                                const dateKey = currentRawData[index].watchDate;
+                                fetchDetails(dateKey, groupingSelect.value, currentFormattedLabels[index]);
+                            },
                             plugins: {
                                 legend: {
-                                    display: true,
-                                    labels: { filter: function(item, chart) { return !item.hidden; } }
+                                    display: true, labels: {
+                                        filter: function (item) {
+                                            return !item.hidden;
+                                        }
+                                    }
                                 },
                                 tooltip: {
                                     callbacks: {
-                                        label: function(context) {
+                                        label: function (context) {
                                             if (context.dataset.type === 'line' || context.raw === 0) return null;
                                             return context.dataset.label + ': ' + context.raw + ' min.';
                                         }
@@ -249,23 +364,23 @@
                                 }
                             },
                             scales: {
-                                x: { stacked: true },
-                                y: { stacked: true, beginAtZero: true, suggestedMax: 120 }
+                                x: {stacked: true},
+                                y: {stacked: true, beginAtZero: true, suggestedMax: 120}
                             }
                         }
                     });
+                    updateChartTheme();
                 } else {
-                    watchChart.data.labels = labels;
-                    watchChart.data.datasets[0].data = data.map(d => d.totalMinutes);
-                    watchChart.data.datasets[1].data = data.map(d => d.totalMinutes);
-                    watchChart.data.datasets[2].data = data.map(d => d.movieMinutes);
-                    watchChart.data.datasets[3].data = data.map(d => d.liveActionMinutes);
-                    watchChart.data.datasets[4].data = data.map(d => d.animeMinutes);
-                    watchChart.data.datasets[5].data = data.map(d => d.animationMinutes);
+                    watchChart.data.labels = currentFormattedLabels;
+                    watchChart.data.datasets[0].data = currentRawData.map(d => d.totalMinutes);
+                    watchChart.data.datasets[1].data = currentRawData.map(d => d.totalMinutes);
+                    watchChart.data.datasets[2].data = currentRawData.map(d => d.movieMinutes);
+                    watchChart.data.datasets[3].data = currentRawData.map(d => d.liveActionMinutes);
+                    watchChart.data.datasets[4].data = currentRawData.map(d => d.animeMinutes);
+                    watchChart.data.datasets[5].data = currentRawData.map(d => d.animationMinutes);
+                    watchChart.update();
                 }
-
                 updateVisibility();
-
             } catch (error) {
                 console.error('Failed to load chart data:', error);
             }
@@ -273,10 +388,10 @@
 
         initDates();
 
+        document.getElementById('closeDetails').addEventListener('click', () => detailsBox.classList.add('d-none'));
         startDateInput.addEventListener('change', loadChart);
         endDateInput.addEventListener('change', loadChart);
         groupingSelect.addEventListener('change', loadChart);
-
         toggleTrend.addEventListener('change', updateVisibility);
         toggleGenres.addEventListener('change', updateVisibility);
 

@@ -227,4 +227,8 @@ public class MediaService {
         };
     }
 
+    public List<WatchLog> getWatchDetails(String dateKey, String grouping) {
+        log.debug("Fetching watch details for dateKey: {}, grouping: {}", dateKey, grouping);
+        return watchLogRepository.findLogsByDateKey(dateKey, grouping.toUpperCase());
+    }
 }
