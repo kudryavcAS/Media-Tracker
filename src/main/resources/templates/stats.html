@@ -6,7 +6,11 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 style="font-weight: bold;">📊 Statistics</h1>
-    <a href="/settings" class="btn btn-outline-secondary">← Back</a>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" id="themeToggle" title="Toggle Theme"><i class="bi bi-moon-fill"></i>
+        </button>
+        <a href="/settings" class="btn btn-outline-secondary">← Back</a>
+    </div>
 </div>
 
 <div class="row mb-4">
@@ -75,11 +79,11 @@
                 <h5 class="text-muted mb-3">Total Items</h5>
                 <h1 class="display-4 fw-bold text-dark mb-4" th:text="${stats.totalItems}"></h1>
                 <div class="d-flex justify-content-around text-muted w-100 px-2">
-                    <div class="p-2 border rounded bg-light w-100 me-2">
+                    <div class="p-2 border rounded bg-body-secondary w-100 me-2">
                         <span class="fs-4 fw-bold text-primary" th:text="${stats.movieCount}"></span><br>
                         <small>Movies</small>
                     </div>
-                    <div class="p-2 border rounded bg-light w-100 ms-2">
+                    <div class="p-2 border rounded bg-body-secondary w-100 ms-2">
                         <span class="fs-4 fw-bold text-success" th:text="${stats.seriesCount}"></span><br>
                         <small>Series</small>
                     </div>
@@ -118,9 +122,12 @@
 <div class="row mb-4">
     <div class="col-12">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3">
+            <div class="card-header bg-transparent py-3">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-                    <h5 class="mb-0 text-success fw-bold"><i class="bi bi-bar-chart-fill me-2"></i>Watch Activity</h5>
+                    <h5 class="mb-0 text-success fw-bold">
+                        <i class="bi bi-bar-chart-fill me-2"></i>Watch Activity
+                        <span id="periodTotal" class="badge bg-success ms-3 fw-normal fs-6"></span>
+                    </h5>
                     <div class="d-flex gap-4">
                         <div class="form-check form-switch mt-1">
                             <input class="form-check-input" type="checkbox" id="toggleTrend" checked>
@@ -134,7 +141,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="d-flex flex-wrap gap-2 align-items-center bg-light p-2 rounded border">
+                <div class="d-flex flex-wrap gap-2 align-items-center bg-body-secondary p-2 rounded border">
                     <span class="small text-muted fw-bold ms-1">Period:</span>
                     <input type="date" id="startDate" class="form-control form-control-sm w-auto">
                     <span class="text-muted">—</span>
@@ -164,10 +171,12 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const ctx = document.getElementById('watchChart').getContext('2d');
+
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
         const groupingSelect = document.getElementById('grouping');
@@ -197,8 +206,10 @@
             const today = new Date();
             const past = new Date();
             past.setDate(today.getDate() - 14);
+
             const z = n => ('0' + n).slice(-2);
             const format = d => `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
+
             startDateInput.value = format(past);
             endDateInput.value = format(today);
         }
@@ -217,12 +228,14 @@
         function updateVisibility() {
             if (!watchChart) return;
             const split = toggleGenres.checked;
+
             watchChart.data.datasets[0].hidden = !toggleTrend.checked;
             watchChart.data.datasets[1].hidden = split;
             watchChart.data.datasets[2].hidden = !split;
             watchChart.data.datasets[3].hidden = !split;
             watchChart.data.datasets[4].hidden = !split;
             watchChart.data.datasets[5].hidden = !split;
+
             watchChart.update();
             detailsBox.classList.add('d-none');
         }
@@ -314,6 +327,12 @@
             try {
                 const response = await fetch(`/api/stats/chart?start=${start}&end=${end}&grouping=${group}`);
                 currentRawData = await response.json();
+
+                const totalPeriodMinutes = currentRawData.reduce((acc, d) => acc + d.totalMinutes, 0);
+                const hours = Math.floor(totalPeriodMinutes / 60);
+                const mins = totalPeriodMinutes % 60;
+                document.getElementById('periodTotal').textContent = hours > 0 ? `Total: ${hours} h. ${mins} min.` : `Total: ${mins} min.`;
+
                 currentFormattedLabels = formatLabels(currentRawData, group);
 
                 if (!watchChart) {
@@ -407,7 +426,9 @@
                     watchChart.data.datasets[5].data = currentRawData.map(d => d.animationMinutes);
                     watchChart.update();
                 }
+
                 updateVisibility();
+
             } catch (error) {
                 console.error('Failed to load chart data:', error);
             }
