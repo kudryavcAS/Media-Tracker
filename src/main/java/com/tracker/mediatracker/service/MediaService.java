@@ -181,8 +181,9 @@ public class MediaService {
             watchLog.setMediaType(type);
             watchLog.setMinutesWatched(minutes);
             watchLog.setWatchedAt(LocalDateTime.now());
+            watchLog.setEpisodes(item instanceof Movie ? null : delta);
             watchLogRepository.save(watchLog);
-            log.info("Logged watch event: {} mins for '{}' [{}]", minutes, item.getTitle(), type);
+            log.info("Logged watch event: {} mins ({} eps) for '{}' [{}]", minutes, watchLog.getEpisodes(), item.getTitle(), type);
         }
     }
 

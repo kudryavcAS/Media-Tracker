@@ -23,4 +23,6 @@ public class WatchLog {
     private String mediaType;
 
     private Integer minutesWatched;
+    
+    private Integer episodes;
 }

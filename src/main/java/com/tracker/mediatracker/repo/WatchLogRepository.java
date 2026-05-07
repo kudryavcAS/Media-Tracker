@@ -63,13 +63,14 @@ public interface WatchLogRepository extends JpaRepository<WatchLog, Long> {
     List<ChartDataProjection> getYearlyActivity(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     @Query(value = """
-                SELECT * FROM watch_log 
-                WHERE 
-                    (:grouping = 'DAY' AND TO_CHAR(watched_at, 'YYYY-MM-DD') = :dateKey) OR
-                    (:grouping = 'WEEK' AND TO_CHAR(date_trunc('week', watched_at), 'YYYY-MM-DD') = :dateKey) OR
-                    (:grouping = 'MONTH' AND TO_CHAR(watched_at, 'YYYY-MM') = :dateKey) OR
-                    (:grouping = 'YEAR' AND TO_CHAR(watched_at, 'YYYY') = :dateKey)
-                ORDER BY watched_at DESC
-            """, nativeQuery = true)
+        SELECT id, watched_at, title, media_type, minutes_watched, episodes 
+        FROM watch_log 
+        WHERE 
+            (:grouping = 'DAY' AND TO_CHAR(watched_at, 'YYYY-MM-DD') = :dateKey) OR
+            (:grouping = 'WEEK' AND TO_CHAR(date_trunc('week', watched_at), 'YYYY-MM-DD') = :dateKey) OR
+            (:grouping = 'MONTH' AND TO_CHAR(watched_at, 'YYYY-MM') = :dateKey) OR
+            (:grouping = 'YEAR' AND TO_CHAR(watched_at, 'YYYY') = :dateKey)
+        ORDER BY watched_at DESC
+    """, nativeQuery = true)
     List<WatchLog> findLogsByDateKey(@Param("dateKey") String dateKey, @Param("grouping") String grouping);
 }

@@ -244,7 +244,7 @@
 
         function formatDate(isoString) {
             const date = new Date(isoString);
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
         }
 
         async function fetchDetails(dateKey, grouping, displayLabel) {
@@ -265,12 +265,12 @@
                                 title: log.title,
                                 mediaType: log.mediaType,
                                 minutes: 0,
-                                count: 0,
+                                episodes: 0,
                                 lastAt: log.watchedAt
                             };
                         }
                         acc[key].minutes += log.minutesWatched;
-                        acc[key].count += 1;
+                        acc[key].episodes += (log.episodes || 0);
                         if (new Date(log.watchedAt) > new Date(acc[key].lastAt)) {
                             acc[key].lastAt = log.watchedAt;
                         }
@@ -284,7 +284,7 @@
                         const item = document.createElement('div');
                         item.className = 'd-flex justify-content-between p-2 rounded bg-body-tertiary';
 
-                        const badge = g.count > 1 ? `<span class="badge bg-secondary ms-2" style="font-size: 0.7em;">${g.count} records</span>` : '';
+                        const badge = (g.mediaType !== 'MOVIE' && g.episodes > 0) ? `<span class="badge bg-secondary ms-2" style="font-size: 0.7em;">${g.episodes} eps</span>` : '';
 
                         item.innerHTML = `
                             <div class="d-flex flex-column justify-content-center">
