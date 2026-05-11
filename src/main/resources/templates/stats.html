@@ -394,9 +394,15 @@
                             },
                             plugins: {
                                 legend: {
-                                    display: true, labels: {
+                                    display: true,
+                                    labels: {
                                         filter: function (item) {
-                                            return !item.hidden;
+                                            const split = document.getElementById('toggleGenres').checked;
+                                            const trend = document.getElementById('toggleTrend').checked;
+
+                                            if (item.datasetIndex === 0) return trend;
+                                            if (item.datasetIndex === 1) return !split;
+                                            return split;
                                         }
                                     }
                                 },
