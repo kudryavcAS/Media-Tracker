@@ -13,10 +13,13 @@
             <input type="hidden" th:field="*{id}">
             <input type="hidden" name="returnUrl" th:value="${returnUrl}">
 
-            <div class="mb-3">
+            <div class="mb-3 position-relative">
                 <label class="form-label fw-bold">Title</label>
-                <input type="text" class="form-control" th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'"
-                       th:field="*{title}" required>
+                <input type="text" id="title" class="form-control"
+                       th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'"
+                       th:field="*{title}" autocomplete="off" required>
+                <div id="tmdbResults" class="list-group position-absolute w-100 shadow d-none"
+                     style="z-index: 1000; max-height: 250px; overflow-y: auto;"></div>
                 <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
             </div>
 
@@ -67,5 +70,72 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const titleInput = document.getElementById('title');
+        const resultsBox = document.getElementById('tmdbResults');
+        const directorsInput = document.getElementById('directors');
+        const releaseYearInput = document.getElementById('releaseYear');
+        const durationInput = document.getElementById('durationMinutes');
+
+        let timeout = null;
+
+        titleInput.addEventListener('input', function () {
+            clearTimeout(timeout);
+            const query = this.value.trim();
+            if (query.length < 2) {
+                resultsBox.classList.add('d-none');
+                return;
+            }
+            timeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/tmdb/search?query=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    const movies = (data.results || []).filter(item => item.media_type === 'movie' || item.mediaType === 'movie');
+
+                    resultsBox.innerHTML = '';
+                    if (movies.length === 0) {
+                        resultsBox.classList.add('d-none');
+                        return;
+                    }
+
+                    movies.forEach(movie => {
+                        const yearStr = movie.release_date || movie.releaseDate;
+                        const year = yearStr ? yearStr.substring(0, 4) : '';
+                        const title = movie.title || movie.name;
+
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'list-group-item list-group-item-action';
+                        btn.innerHTML = `<strong>${title}</strong> <span class="text-muted">${year ? `(${year})` : ''}</span>`;
+
+                        btn.addEventListener('click', async () => {
+                            titleInput.value = title;
+                            resultsBox.classList.add('d-none');
+
+                            const res = await fetch(`/api/tmdb/details?id=${movie.id}&type=movie`);
+                            const details = await res.json();
+
+                            if (details.releaseYear) releaseYearInput.value = details.releaseYear;
+                            if (details.durationMinutes) durationInput.value = details.durationMinutes;
+                            if (details.directors) directorsInput.value = details.directors;
+                        });
+                        resultsBox.appendChild(btn);
+                    });
+                    resultsBox.classList.remove('d-none');
+                } catch (e) {
+                    console.error('TMDB search failed', e);
+                }
+            }, 500);
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!titleInput.contains(e.target) && !resultsBox.contains(e.target)) {
+                resultsBox.classList.add('d-none');
+            }
+        });
+    });
+</script>
 </body>
 </html>

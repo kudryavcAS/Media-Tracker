@@ -1,6 +1,7 @@
 package com.tracker.mediatracker.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tracker.mediatracker.dto.TmdbDetailsDto;
 import com.tracker.mediatracker.dto.TmdbSearchResultDto;
 import lombok.extern.slf4j.Slf4j;
@@ -16,10 +17,13 @@ import java.util.List;
 public class TmdbService {
 
     private final RestClient restClient;
+    private final ObjectMapper objectMapper;
 
     public TmdbService(
             @Value("${tmdb.api.url}") String apiUrl,
-            @Value("${tmdb.api.token}") String token) {
+            @Value("${tmdb.api.token}") String token,
+            ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
         this.restClient = RestClient.builder()
                 .baseUrl(apiUrl)
                 .defaultHeader("Authorization", "Bearer " + token)
@@ -28,14 +32,21 @@ public class TmdbService {
 
     public TmdbSearchResultDto search(String query) {
         log.debug("Searching TMDB for query: {}", query);
-        return restClient.get()
+        String responseBody = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/search/multi")
                         .queryParam("query", query)
                         .queryParam("language", "ru-RU")
                         .build())
                 .retrieve()
-                .body(TmdbSearchResultDto.class);
+                .body(String.class);
+
+        try {
+            return objectMapper.readValue(responseBody, TmdbSearchResultDto.class);
+        } catch (Exception e) {
+            log.error("Search parsing failed", e);
+            return new TmdbSearchResultDto();
+        }
     }
 
     public TmdbDetailsDto getDetails(Long id, String mediaType) {
@@ -43,26 +54,28 @@ public class TmdbService {
         TmdbDetailsDto dto = new TmdbDetailsDto();
 
         try {
-            if ("movie".equalsIgnoreCase(mediaType)) {
-                JsonNode response = restClient.get()
-                        .uri("/movie/{id}?append_to_response=credits&language=ru-RU", id)
-                        .retrieve()
-                        .body(JsonNode.class);
+            String path = "movie".equalsIgnoreCase(mediaType) ? "/movie/" + id : "/tv/" + id;
+            String append = "movie".equalsIgnoreCase(mediaType) ? "credits" : "aggregate_credits";
 
-                if (response != null) {
+            String responseBody = restClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path(path)
+                            .queryParam("append_to_response", append)
+                            .queryParam("language", "ru-RU")
+                            .build())
+                    .retrieve()
+                    .body(String.class);
+
+            if (responseBody != null) {
+                JsonNode response = objectMapper.readTree(responseBody);
+
+                if ("movie".equalsIgnoreCase(mediaType)) {
                     dto.setTitle(response.path("title").asText(null));
                     String date = response.path("release_date").asText("");
                     if (date.length() >= 4) dto.setReleaseYear(Integer.parseInt(date.substring(0, 4)));
                     dto.setDurationMinutes(response.path("runtime").asInt(0));
                     dto.setDirectors(extractDirectors(response.path("credits").path("crew")));
-                }
-            } else if ("tv".equalsIgnoreCase(mediaType)) {
-                JsonNode response = restClient.get()
-                        .uri("/tv/{id}?append_to_response=aggregate_credits&language=ru-RU", id)
-                        .retrieve()
-                        .body(JsonNode.class);
-
-                if (response != null) {
+                } else if ("tv".equalsIgnoreCase(mediaType)) {
                     dto.setTitle(response.path("name").asText(null));
                     String date = response.path("first_air_date").asText("");
                     if (date.length() >= 4) dto.setReleaseYear(Integer.parseInt(date.substring(0, 4)));
