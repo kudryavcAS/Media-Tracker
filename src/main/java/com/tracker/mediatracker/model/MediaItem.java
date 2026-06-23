@@ -56,7 +56,7 @@ public abstract class MediaItem {
     private Integer typeOrder;
 
     @JsonIgnore
-    @Formula("(CASE WHEN content_type = 'MOVIE' THEN (CASE WHEN status = 'COMPLETED' THEN 100 ELSE 0 END) WHEN total_episodes IS NOT NULL AND total_episodes > 0 THEN (COALESCE(watched_episodes, 0) * 100 / total_episodes) ELSE 0 END)")
+    @Formula("(CASE WHEN content_type = 'SERIES' AND status = 'WATCHING' THEN -1000 - (CASE WHEN total_episodes IS NOT NULL AND total_episodes > 0 THEN (COALESCE(watched_episodes, 0) * 100 / total_episodes) ELSE 0 END) WHEN status = 'WATCHING' THEN 1000 WHEN status = 'PLANNED' THEN 2000 WHEN status = 'DROPPED' THEN 3000 WHEN status = 'COMPLETED' THEN 4000 ELSE 5000 END)")
     private Integer progress;
 
     public void markAsCompleted() {
