@@ -55,3 +55,5 @@ docker_data/
 
 /test_db_data/
 
+*.bat
+MMM.bat

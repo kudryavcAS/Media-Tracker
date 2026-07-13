@@ -162,4 +162,16 @@ public class MediaController {
     private String getSafeRedirect(String referer) {
         return getSafeRedirect(referer, null);
     }
+
+    @PostMapping("/api/shutdown")
+    @ResponseBody
+    public void shutdownApp() {
+        new Thread(() -> {
+            try {
+                Thread.sleep(500);
+                System.exit(0);
+            } catch (InterruptedException ignored) {
+            }
+        }).start();
+    }
 }

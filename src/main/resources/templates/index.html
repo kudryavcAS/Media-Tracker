@@ -23,8 +23,12 @@
     }
 
     @keyframes highlight-row {
-        0% { box-shadow: inset 0 0 0 9999px #fff3cd; }
-        100% { box-shadow: inset 0 0 0 9999px transparent; }
+        0% {
+            box-shadow: inset 0 0 0 9999px #fff3cd;
+        }
+        100% {
+            box-shadow: inset 0 0 0 9999px transparent;
+        }
     }
 
     table.table tbody tr.clickable-row:target > td {
@@ -36,6 +40,7 @@
     <h1 style="font-weight: bold;">Media Tracker</h1>
 
     <div class="d-flex gap-2">
+        <button class="btn btn-outline-danger" onclick="shutdownServer()"><i class="bi bi-power"></i></button>
         <a href="/add/movie" class="btn btn-primary">+ Movie</a>
         <a href="/add/series" class="btn btn-success">+ Series</a>
         <a href="/settings" class="btn btn-secondary">⚙️ Settings</a>
@@ -349,6 +354,19 @@
             }
         }
     });
+
+    async function shutdownServer() {
+        try {
+            await fetch('/api/shutdown', {method: 'POST'});
+        } catch (e) {
+        }
+
+        window.close();
+
+        setTimeout(() => {
+            document.body.innerHTML = '<div class="d-flex justify-content-center align-items-center vh-100"><h2 class="text-muted">Server stopped. You can close this tab.</h2></div>';
+        }, 200);
+    }
 </script>
 
 </body>

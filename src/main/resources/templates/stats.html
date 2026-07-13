@@ -7,6 +7,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 style="font-weight: bold;">📊 Statistics</h1>
     <div class="d-flex gap-2">
+        <button class="btn btn-outline-danger" onclick="shutdownServer()"><i class="bi bi-power"></i></button>
         <button class="btn btn-outline-secondary" id="themeToggle" title="Toggle Theme"><i class="bi bi-moon-fill"></i>
         </button>
         <a href="/settings" class="btn btn-outline-secondary">← Back</a>
@@ -451,6 +452,19 @@
 
         loadChart();
     });
+
+    async function shutdownServer() {
+        try {
+            await fetch('/api/shutdown', {method: 'POST'});
+        } catch (e) {
+        }
+
+        window.close();
+
+        setTimeout(() => {
+            document.body.innerHTML = '<div class="d-flex justify-content-center align-items-center vh-100"><h2 class="text-muted">Server stopped. You can close this tab.</h2></div>';
+        }, 200);
+    }
 </script>
 
 </body>
